@@ -19,6 +19,10 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
 .app{max-width:920px;margin:0 auto;padding:24px 16px 100px}
 
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--primary);color:#fff;padding:10px 22px;border-radius:99px;font-size:.82rem;font-weight:500;z-index:9999;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(30,42,120,.3)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
 /* HEADER */
 .header{display:flex;align-items:center;gap:14px;margin-bottom:28px}
 .logo{width:44px;height:44px;background:var(--primary);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -721,6 +725,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 // ══════════════════════════════════════════════════════════
 // STATE
@@ -808,10 +814,12 @@ function addStratHyp() {
   stratHyps.push(val);
   renderStratHyps();
   inp.value = '';
+  saveState();
 }
 function removeStratHyp(idx) {
   stratHyps.splice(idx, 1);
   renderStratHyps();
+  saveState();
 }
 function renderStratHyps() {
   document.getElementById('stratHypTags').innerHTML = stratHyps.map((h,i) =>
@@ -844,6 +852,7 @@ function saveStrategy() {
   generateSuggestions();
   renderVersions();
   updatePAS();
+  saveState();
   showTab('hypothesis');
 }
 
@@ -1334,6 +1343,7 @@ function addToRoadmap(analysisObj, fromAI) {
   checkAlerts();
   updatePAS();
   checkAIBanner();
+  saveState();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1744,7 +1754,7 @@ function onDrop(e,zone) {
     roadmap[zone].push(item);
     const hi = history.find(h=>h.id===item.id);
     if (hi) hi.zone = zone;
-    renderRoadmap(); renderHistory(); checkAlerts(); updatePAS();
+    renderRoadmap(); renderHistory(); checkAlerts(); updatePAS(); saveState();
   }
 }
 
@@ -1755,6 +1765,7 @@ function resetAll() {
   product=null; strategy=null; strategyVersions=[]; stratHyps=[]; currentAnalysis=null;
   roadmap={now:[],next:[],later:[],reject:[]}; history=[];
   pasScore=0;
+  localStorage.removeItem(STORAGE_KEY);
   document.getElementById('pasVal').textContent='—';
   document.getElementById('pasBar').style.width='0%';
   document.getElementById('hypText').value='';
@@ -1775,9 +1786,115 @@ function resetAll() {
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtDate(d) { return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
 
+// ══════════════════════════════════════════════════════════
+// PERSISTENCE — localStorage
+// ══════════════════════════════════════════════════════════
+const STORAGE_KEY = 'pac_state_v1';
+
+function saveState() {
+  try {
+    const toISO = d => (d instanceof Date ? d.toISOString() : d);
+    const serializeItem = item => ({
+      ...item,
+      ts: toISO(item.ts),
+      stratCtx: item.stratCtx ? { ...item.stratCtx, ts: toISO(item.stratCtx.ts) } : null,
+    });
+    const state = {
+      product,
+      strategy: strategy ? { ...strategy, ts: toISO(strategy.ts) } : null,
+      strategyVersions: strategyVersions.map(v => ({ ...v, ts: toISO(v.ts) })),
+      stratHyps,
+      roadmap: {
+        now:    roadmap.now.map(serializeItem),
+        next:   roadmap.next.map(serializeItem),
+        later:  roadmap.later.map(serializeItem),
+        reject: roadmap.reject.map(serializeItem),
+      },
+      history: history.map(serializeItem),
+      pasScore,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) { console.warn('PAC saveState error', e); }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+
+    const toDate = s => s ? new Date(s) : new Date();
+    const restoreItem = item => ({
+      ...item,
+      ts: toDate(item.ts),
+      stratCtx: item.stratCtx ? { ...item.stratCtx, ts: toDate(item.stratCtx.ts) } : null,
+    });
+
+    product = state.product || null;
+    stratHyps = state.stratHyps || [];
+    strategyVersions = (state.strategyVersions || []).map(v => ({ ...v, ts: toDate(v.ts) }));
+    strategy = state.strategy ? { ...state.strategy, ts: toDate(state.strategy.ts) } : null;
+    history = (state.history || []).map(restoreItem);
+    roadmap = {
+      now:    (state.roadmap?.now    || []).map(restoreItem),
+      next:   (state.roadmap?.next   || []).map(restoreItem),
+      later:  (state.roadmap?.later  || []).map(restoreItem),
+      reject: (state.roadmap?.reject || []).map(restoreItem),
+    };
+    pasScore = state.pasScore || 0;
+
+    if (product) {
+      const setVal = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+      setVal('prodName',     product.name);
+      setVal('prodCategory', product.category);
+      setVal('prodDesc',     product.desc);
+      setVal('prodValue',    product.value);
+      setVal('prodAudience', product.audience);
+    }
+    if (strategy) {
+      const setVal = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+      setVal('targetMetric', strategy.targetMetric);
+      setVal('baselineVal',  strategy.baselineVal);
+      setVal('targetVal',    strategy.targetVal);
+      setVal('targetDate',   strategy.targetDate);
+      setVal('focus',        strategy.focus);
+      setVal('focus2',       strategy.focus2);
+      setVal('stage',        strategy.stage);
+      setVal('resource',     strategy.resource);
+      setVal('budget',       strategy.budget);
+      setVal('tempo',        strategy.tempo);
+      setVal('devCap',       strategy.devCap);
+      document.querySelectorAll('.af-chip').forEach(chip => {
+        if (strategy.antiFocus.includes(chip.textContent.trim())) chip.classList.add('selected');
+      });
+      renderContextStrip();
+      renderVersions();
+      generateSuggestions();
+    }
+    renderStratHyps();
+    renderRoadmap();
+    renderHistory();
+    checkAlerts();
+    if (strategy) updatePAS();
+    if (history.length > 0) showTab('roadmap');
+
+    if (strategy || history.length) showToast('Сессия восстановлена ✓');
+  } catch(e) { console.warn('PAC loadState error', e); }
+}
+
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
 // Init
 renderRoadmap();
 renderStratHyps();
+loadState();
 </script>
 </body>
 </html>
