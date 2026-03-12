@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Architecture Copilot</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F0F1F7; --surface:#fff; --primary:#1E2A78; --accent:#6B6EF9;
+  --success:#22C55E; --warn:#F59E0B; --danger:#EF4444; --blue:#3B82F6;
+  --purple:#8B5CF6; --teal:#14B8A6;
+  --text:#0F1729; --muted:#7C83A0; --border:#E2E5F0;
+  --radius:16px;
+  --sh:0 2px 12px rgba(30,42,120,.08),0 1px 3px rgba(30,42,120,.05);
+  --sh2:0 8px 32px rgba(30,42,120,.14),0 2px 8px rgba(30,42,120,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.app{max-width:920px;margin:0 auto;padding:24px 16px 100px}
+
+/* HEADER */
+.header{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.logo{width:44px;height:44px;background:var(--primary);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2}
+.header-text h1{font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:700;color:var(--primary);letter-spacing:-.01em}
+.header-text p{font-size:.8rem;color:var(--muted)}
+.pas-widget{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.pas-lbl{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.pas-row{display:flex;align-items:center;gap:8px}
+.pas-val{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--primary)}
+.pas-bar-wrap{width:56px;height:5px;background:var(--border);border-radius:99px;overflow:hidden}
+.pas-bar{height:100%;border-radius:99px;background:var(--accent);transition:width .8s ease}
+
+/* NAV */
+.nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.nav-btn{padding:8px 18px;border-radius:99px;font-size:.85rem;font-weight:500;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all .2s;position:relative}
+.nav-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.nav-dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid var(--bg);display:none}
+.nav-dot.show{display:block}
+
+/* STEPPER */
+.stepper{display:flex;align-items:center;margin-bottom:24px}
+.step{display:flex;align-items:center;gap:8px}
+.step-num{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .3s}
+.step.active .step-num{background:var(--accent);border-color:var(--accent);color:#fff}
+.step.done .step-num{background:var(--success);border-color:var(--success);color:#fff}
+.step-label{font-size:.8rem;font-weight:500;color:var(--muted);white-space:nowrap}
+.step.active .step-label{color:var(--primary);font-weight:600}
+.step.done .step-label{color:var(--success)}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 10px;min-width:14px;transition:background .3s}
+.step-line.done{background:var(--success)}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--sh);padding:28px;margin-bottom:20px;transition:box-shadow .2s}
+.card:hover{box-shadow:var(--sh2)}
+.card-ai{border-left:3px solid var(--accent)}
+.section-tag{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:#EDEDFE;border-radius:6px;padding:3px 10px;margin-bottom:14px}
+.section-tag.warn{color:#B45309;background:#FEF3C7}
+.section-tag.danger{color:#B91C1C;background:#FEE2E2}
+.section-tag.success{color:#15803D;background:#DCFCE7}
+.section-tag.purple{color:#5B21B6;background:#EDE9FE}
+.section-tag.teal{color:#0F766E;background:#CCFBF1}
+.card-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--primary);margin-bottom:6px;line-height:1.3}
+.card-sub{font-size:.85rem;color:var(--muted);margin-bottom:20px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:600px){.form-grid,.form-grid-3{grid-template-columns:1fr}}
+.field-full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.8rem;font-weight:500;color:var(--muted);letter-spacing:.02em}
+.field select,.field input,.field textarea{font-family:'DM Sans',sans-serif;font-size:.92rem;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;outline:none;background:#FAFBFF;color:var(--text);transition:border-color .2s,box-shadow .2s;width:100%}
+.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(107,110,249,.12)}
+.field textarea{resize:vertical;min-height:80px}
+
+/* Anti-focus chips */
+.antifocus-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.af-chip{padding:6px 14px;border-radius:99px;font-size:.82rem;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all .2s;user-select:none}
+.af-chip.selected{background:#FEE2E2;border-color:var(--danger);color:#B91C1C;font-weight:500}
+
+/* Strategic hypothesis tags */
+.hyp-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;min-height:36px}
+.hyp-tag{display:flex;align-items:center;gap:6px;background:#EDEDFE;color:var(--primary);border-radius:8px;padding:4px 10px;font-size:.8rem}
+.hyp-tag button{border:none;background:none;cursor:pointer;color:var(--muted);font-size:.9rem;padding:0 2px;line-height:1}
+.hyp-tag button:hover{color:var(--danger)}
+.add-hyp-row{display:flex;gap:8px;margin-top:6px}
+.add-hyp-row input{flex:1;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;outline:none;background:#FAFBFF;color:var(--text);transition:border-color .2s}
+.add-hyp-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(107,110,249,.12)}
+.add-hyp-row button{padding:8px 14px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-size:.82rem;font-weight:500;white-space:nowrap;transition:all .2s}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:500;border:none;border-radius:10px;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(30,42,120,.3)}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(30,42,120,.4)}
+.btn-accent{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(107,110,249,.3)}
+.btn-accent:hover{box-shadow:0 6px 20px rgba(107,110,249,.4)}
+.btn-ghost{background:transparent;color:var(--primary);border:1.5px solid var(--border)}
+.btn-ghost:hover{background:#F0F1F7}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:7px 14px;font-size:.82rem}
+.btn-full{width:100%}
+.btn-row{display:flex;gap:10px;margin-top:20px}
+.btn-row .btn{flex:1}
+
+/* CONTEXT STRIP */
+.ctx-strip{display:flex;flex-wrap:wrap;gap:14px;background:var(--primary);border-radius:12px;padding:14px 18px;margin-bottom:20px}
+.ctx-item{display:flex;flex-direction:column;gap:2px}
+.ctx-lbl{font-size:.65rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em}
+.ctx-val{font-size:.84rem;font-weight:600;color:#fff}
+.ctx-val.af{color:#FCA5A5}
+
+/* HYPOTHESIS CHIPS */
+.hyp-chips{display:flex;flex-wrap:wrap;gap:8px}
+.hyp-chip{padding:8px 14px;border-radius:99px;font-size:.82rem;border:1.5px solid var(--border);background:#fff;color:var(--text);cursor:pointer;transition:all .2s;line-height:1.3;text-align:left}
+.hyp-chip:hover{border-color:var(--accent);background:#EDEDFE;color:var(--accent)}
+.hyp-chip.selected{border-color:var(--accent);background:#EDEDFE;color:var(--primary);font-weight:500}
+
+/* THINKING */
+.thinking{display:none;align-items:center;gap:12px;padding:20px 24px;background:#EDEDFE;border-radius:12px;margin-bottom:20px;font-size:.9rem;color:var(--accent);font-weight:500}
+.thinking.show{display:flex}
+.dots span{display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;animation:bounce 1.2s infinite;margin:0 2px}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.5}40%{transform:translateY(-6px);opacity:1}}
+
+/* ANALYSIS LAYERS */
+.analysis-wrap{opacity:0;transform:translateY(12px);transition:opacity .4s,transform .4s}
+.analysis-wrap.visible{opacity:1;transform:none}
+
+.layer-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.layer-tab{padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:500;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all .2s}
+.layer-tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.layer-panel{display:none}
+.layer-panel.active{display:block}
+
+/* SCORES */
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:540px){.score-grid{grid-template-columns:1fr 1fr}}
+.score-item{background:#F7F8FF;border-radius:12px;padding:14px 14px;display:flex;flex-direction:column;gap:8px}
+.score-name{font-size:.72rem;color:var(--muted);font-weight:500;letter-spacing:.03em}
+.score-row{display:flex;align-items:center;gap:8px}
+.score-val{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;color:var(--primary)}
+.score-bar{flex:1;height:5px;background:var(--border);border-radius:99px;overflow:hidden}
+.score-fill{height:100%;border-radius:99px;transition:width .7s ease}
+
+/* CAUSAL CHAIN */
+.chain{display:flex;align-items:flex-start;gap:0;flex-wrap:wrap;margin:12px 0}
+.chain-node{background:#F7F8FF;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.82rem;flex:1;min-width:120px}
+.chain-node .cn-lbl{font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px}
+.chain-node .cn-val{font-weight:500;color:var(--text);line-height:1.4}
+.chain-node.broken{border-color:var(--danger);background:#FFF1F2}
+.chain-node.broken .cn-lbl{color:var(--danger)}
+.chain-arrow{display:flex;align-items:center;padding:0 6px;color:var(--muted);font-size:1rem;flex-shrink:0;margin-top:20px}
+.weak-link{background:#FFF7ED;border:1.5px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:.82rem;color:#92400E;margin-top:10px;display:flex;gap:8px;align-items:flex-start}
+
+/* LAYERS */
+.conflict-box{border-left:3px solid var(--warn);background:#FFFBEB;border-radius:0 10px 10px 0;padding:12px 16px;margin-bottom:10px;font-size:.875rem;color:#92400E}
+.conflict-box.ok{border-color:var(--success);background:#F0FDF4;color:#166534}
+.risk-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:8px;font-size:.78rem;font-weight:700}
+.risk-low{background:#DCFCE7;color:#15803D}
+.risk-medium{background:#FEF3C7;color:#B45309}
+.risk-high{background:#FEE2E2;color:#B91C1C}
+
+.econ-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.econ-item{background:#F7F8FF;border-radius:10px;padding:12px 14px}
+.econ-lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.econ-val{font-size:.88rem;font-weight:600}
+.econ-pos{color:#15803D}
+.econ-neg{color:#B91C1C}
+.econ-neu{color:#B45309}
+
+.alts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.alt-item{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:10px;border:1.5px solid var(--border);font-size:.875rem;transition:border-color .2s}
+.alt-item:hover{border-color:var(--accent)}
+.alt-badge{flex-shrink:0;padding:2px 9px;border-radius:6px;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.alt-lean{background:#E0F2FE;color:#0369A1}
+.alt-exp{background:#FEF3C7;color:#92400E}
+.alt-full{background:#EDE9FE;color:#5B21B6}
+
+.depth-badge{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:6px;margin-bottom:14px}
+.depth-quick{background:#E0F2FE;color:#0369A1}
+.depth-standard{background:#EDE9FE;color:#5B21B6}
+.depth-deep{background:#FEE2E2;color:#B91C1C}
+
+/* VERDICT */
+.verdict-row{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.verdict-lbl{font-size:.82rem;color:var(--muted);font-weight:500}
+.verdict-badge{padding:6px 20px;border-radius:99px;font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.04em}
+.verdict-now{background:#DCFCE7;color:#15803D}
+.verdict-next{background:#DBEAFE;color:#1D4ED8}
+.verdict-later{background:#FEF3C7;color:#B45309}
+.verdict-reject{background:#FEE2E2;color:#B91C1C}
+
+/* ROADMAP */
+.roadmap-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:680px){.roadmap-board{grid-template-columns:1fr 1fr}}
+@media(max-width:400px){.roadmap-board{grid-template-columns:1fr}}
+.rm-col{border-radius:var(--radius);padding:14px 12px;min-height:120px}
+.rm-col.now{background:#F0FDF4;border:1.5px solid #BBF7D0}
+.rm-col.next{background:#EFF6FF;border:1.5px solid #BFDBFE}
+.rm-col.later{background:#FFFBEB;border:1.5px solid #FDE68A}
+.rm-col.reject{background:#FFF1F2;border:1.5px solid #FECDD3}
+.rm-col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.rm-col-title{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.rm-col.now .rm-col-title{color:#15803D}
+.rm-col.next .rm-col-title{color:#1D4ED8}
+.rm-col.later .rm-col-title{color:#B45309}
+.rm-col.reject .rm-col-title{color:#B91C1C}
+.rm-cnt{font-size:.7rem;font-weight:700;background:rgba(0,0,0,.07);border-radius:99px;padding:1px 8px}
+.rm-card{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:.8rem;box-shadow:var(--sh);cursor:grab;transition:box-shadow .2s,transform .15s;user-select:none}
+.rm-card:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.rm-card.dragging{opacity:.5;transform:rotate(2deg);cursor:grabbing}
+.rm-card-title{font-weight:500;color:var(--text);line-height:1.4}
+.rm-card-meta{font-size:.7rem;color:var(--muted);margin-top:3px}
+.rm-card-badges{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.rm-card-badge{font-size:.65rem;font-weight:700;padding:1px 7px;border-radius:4px;text-transform:uppercase}
+.badge-ai{background:#EDE9FE;color:#5B21B6}
+.badge-user{background:#EDEDFE;color:#1D4ED8}
+.rm-card-btn{font-size:.7rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);transition:all .15s;margin-top:5px}
+.rm-card-btn:hover{background:#EDEDFE;color:var(--accent);border-color:var(--accent)}
+.rm-drop-zone{min-height:32px;border-radius:8px;border:2px dashed transparent;transition:border-color .2s,background .2s}
+.rm-drop-zone.drag-over{border-color:var(--accent);background:#EDEDFE44}
+
+/* AI SUGGESTIONS PANEL */
+.ai-panel{background:linear-gradient(135deg,#F5F3FF,#EFF6FF);border:1.5px solid #C4B5FD;border-radius:var(--radius);padding:20px 24px;margin-bottom:20px}
+.ai-panel-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:#5B21B6;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.ai-panel-sub{font-size:.8rem;color:var(--muted);margin-bottom:14px}
+.ai-initiative{background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:10px;border:1.5px solid #C4B5FD;display:flex;gap:14px;align-items:flex-start}
+.ai-initiative-text{flex:1}
+.ai-initiative-title{font-weight:500;font-size:.88rem;line-height:1.4;margin-bottom:4px}
+.ai-initiative-reason{font-size:.78rem;color:var(--muted);line-height:1.4}
+.ai-initiative-actions{display:flex;gap:6px;flex-shrink:0}
+.ai-btn{padding:5px 12px;border-radius:7px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.ai-btn-accept{background:#DCFCE7;color:#15803D}
+.ai-btn-accept:hover{background:#BBF7D0}
+.ai-btn-reject{background:#FEE2E2;color:#B91C1C}
+.ai-btn-reject:hover{background:#FECDD3}
+
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:10px}
+.history-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;background:#F7F8FF;border-radius:10px;font-size:.85rem;cursor:pointer;transition:background .2s,transform .15s}
+.history-item:hover{background:#EDEDFE;transform:translateX(2px)}
+.history-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.dot-now{background:var(--success)} .dot-next{background:var(--blue)}
+.dot-later{background:var(--warn)} .dot-reject{background:var(--danger)}
+.history-hint{font-size:.7rem;color:var(--accent);margin-top:2px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,41,.6);backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(30,42,120,.2);width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:32px;transform:translateY(16px);transition:transform .25s}
+.modal-overlay.open .modal{transform:none}
+.modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--primary);line-height:1.5}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);font-size:1.1rem;transition:all .15s}
+.modal-close:hover{background:#F0F1F7}
+.modal-section{margin-bottom:22px}
+.modal-section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.modal-score-row{display:flex;flex-wrap:wrap;gap:10px}
+.modal-score-chip{display:flex;flex-direction:column;align-items:center;background:#F7F8FF;border-radius:10px;padding:10px 18px;gap:3px;min-width:80px}
+.modal-score-chip .val{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700}
+.modal-score-chip .lbl{font-size:.68rem;color:var(--muted);text-align:center}
+.modal-alt{padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);font-size:.85rem;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.modal-text-box{background:#F7F8FF;border-radius:10px;padding:14px 16px;font-size:.9rem;color:var(--text);line-height:1.6;border:1.5px solid var(--border)}
+.modal-ctx{display:flex;flex-wrap:wrap;gap:16px}
+.modal-ctx-item{display:flex;flex-direction:column;gap:3px}
+.modal-ctx-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.modal-ctx-val{font-weight:600;font-size:.88rem}
+
+/* ALERTS */
+.alert{display:none;align-items:flex-start;gap:10px;background:#FFF7ED;border:1.5px solid #FDE68A;border-radius:10px;padding:12px 16px;font-size:.85rem;color:#92400E;margin-bottom:16px}
+.alert.show{display:flex}
+
+/* SNAPSHOT */
+.snapshot-card{background:var(--primary);border-radius:var(--radius);padding:28px;margin-bottom:20px;color:#fff}
+.snapshot-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:6px}
+.snapshot-sub{font-size:.85rem;opacity:.7;margin-bottom:20px}
+.snapshot-stats{display:flex;flex-wrap:wrap;gap:20px;margin-bottom:20px}
+.snap-stat{display:flex;flex-direction:column;gap:2px}
+.snap-stat-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800}
+.snap-stat-lbl{font-size:.72rem;opacity:.6}
+.snapshot-warn{background:rgba(245,158,11,.2);border:1px solid rgba(245,158,11,.5);border-radius:10px;padding:10px 14px;font-size:.82rem;color:#FDE68A;margin-bottom:10px}
+.snapshot-quote{font-style:italic;font-size:.88rem;opacity:.7;border-top:1px solid rgba(255,255,255,.15);padding-top:14px}
+
+/* STRATEGY VERSION BADGE */
+.version-badge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:6px;background:#EDEDFE;color:var(--accent)}
+
+/* MISC */
+.divider{height:1px;background:var(--border);margin:20px 0}
+.mono{font-family:'DM Mono',monospace;font-size:.82rem}
+.hidden{display:none!important}
+.mt8{margin-top:8px}
+.mt16{margin-top:16px}
+.mt20{margin-top:20px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .35s ease forwards}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  </div>
+  <div class="header-text">
+    <h1>Product Architecture Copilot</h1>
+    <p>AI Head of Product · Стратегический анализ в реальном времени</p>
+  </div>
+  <div class="pas-widget">
+    <div class="pas-lbl">Architecture Score</div>
+    <div class="pas-row">
+      <div class="pas-val" id="pasVal">—</div>
+      <div class="pas-bar-wrap"><div class="pas-bar" id="pasBar" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" id="navStrategy" onclick="showTab('strategy')">Стратегия</button>
+  <button class="nav-btn" id="navHyp" onclick="showTab('hypothesis')">Гипотеза<div class="nav-dot" id="dotHyp"></div></button>
+  <button class="nav-btn" id="navRoadmap" onclick="showTab('roadmap')">Roadmap<div class="nav-dot" id="dotRoadmap"></div></button>
+  <button class="nav-btn" id="navOffice" onclick="showTab('office')">AI Office<div class="nav-dot" id="dotOffice"></div></button>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- STRATEGY TAB                                   -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="tab-strategy">
+  <div class="stepper fade-in">
+    <div class="step active" id="step1"><div class="step-num">1</div><div class="step-label">Продукт</div></div>
+    <div class="step-line" id="line1"></div>
+    <div class="step" id="step2"><div class="step-num">2</div><div class="step-label">Стратегия</div></div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3"><div class="step-num">3</div><div class="step-label">Гипотезы</div></div>
+  </div>
+
+  <!-- Step 1: Product -->
+  <div id="stratStep1">
+    <div class="card fade-in">
+      <div class="section-tag">Шаг 1 из 3 — Продукт</div>
+      <div class="card-title">Расскажи о своём продукте</div>
+      <div class="card-sub">PAC использует эти данные для контекстного анализа и генерации гипотез</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Название продукта</label>
+          <input type="text" id="prodName" placeholder="Например: Figma, Duolingo, Notion">
+        </div>
+        <div class="field">
+          <label>Категория</label>
+          <select id="prodCategory">
+            <option value="SaaS B2B">SaaS B2B</option>
+            <option value="SaaS B2C">SaaS B2C</option>
+            <option value="Маркетплейс">Маркетплейс</option>
+            <option value="Мобильное приложение">Мобильное приложение</option>
+            <option value="EdTech">EdTech</option>
+            <option value="FinTech">FinTech</option>
+            <option value="HealthTech">HealthTech</option>
+            <option value="E-commerce">E-commerce</option>
+            <option value="Другое">Другое</option>
+          </select>
+        </div>
+        <div class="field field-full">
+          <label>Краткое описание — что делает продукт и для кого</label>
+          <textarea id="prodDesc" placeholder="Например: Инструмент для планирования задач для фрилансеров. Помогает управлять проектами, отслеживать время и выставлять счета."></textarea>
+        </div>
+        <div class="field">
+          <label>Ключевая ценность</label>
+          <input type="text" id="prodValue" placeholder="Экономит время, повышает доход...">
+        </div>
+        <div class="field">
+          <label>Основная аудитория</label>
+          <input type="text" id="prodAudience" placeholder="Фрилансеры, PMы, стартапы...">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full mt16" onclick="toStep2()">Далее: стратегия →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Strategy -->
+  <div id="stratStep2" class="hidden">
+    <div class="card fade-in">
+      <div class="section-tag">Шаг 2 из 3 — Стратегия</div>
+      <div class="card-title">Стратегическая цель и контекст</div>
+      <div class="card-sub">Формализуем стратегию — она станет основой для алгоритмической оценки гипотез</div>
+
+      <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">A · Стратегическая цель</div>
+      <div class="form-grid" style="margin-bottom:20px">
+        <div class="field">
+          <label>Целевая метрика</label>
+          <select id="targetMetric">
+            <option value="MRR">MRR</option>
+            <option value="ARR">ARR</option>
+            <option value="DAU/MAU">DAU/MAU</option>
+            <option value="Retention 30d">Retention 30d</option>
+            <option value="CAC">CAC</option>
+            <option value="LTV">LTV</option>
+            <option value="Конверсия">Конверсия</option>
+            <option value="NPS">NPS</option>
+            <option value="Revenue">Revenue</option>
+            <option value="Другое">Другое</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Текущее значение (baseline)</label>
+          <input type="text" id="baselineVal" placeholder="Например: 50 000 ₽">
+        </div>
+        <div class="field">
+          <label>Целевое значение</label>
+          <input type="text" id="targetVal" placeholder="Например: 100 000 ₽">
+        </div>
+        <div class="field">
+          <label>Дедлайн</label>
+          <select id="targetDate">
+            <option value="Q1">Q1</option>
+            <option value="Q2">Q2</option>
+            <option value="Q3">Q3</option>
+            <option value="Q4">Q4</option>
+            <option value="6 мес">6 мес</option>
+            <option value="12 мес">12 мес</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">B · Фокус и Anti-focus</div>
+      <div class="form-grid" style="margin-bottom:20px">
+        <div class="field">
+          <label>Фокус квартала</label>
+          <select id="focus">
+            <option value="Acquisition">Acquisition</option>
+            <option value="Activation">Activation</option>
+            <option value="Retention" selected>Retention</option>
+            <option value="Monetization">Monetization</option>
+            <option value="Infrastructure">Infrastructure</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Дополнительный фокус (опционально)</label>
+          <select id="focus2">
+            <option value="">— нет —</option>
+            <option value="Acquisition">Acquisition</option>
+            <option value="Activation">Activation</option>
+            <option value="Retention">Retention</option>
+            <option value="Monetization">Monetization</option>
+            <option value="Infrastructure">Infrastructure</option>
+          </select>
+        </div>
+        <div class="field field-full">
+          <label>Anti-focus — зоны, которые НЕ усиливаются в этом квартале</label>
+          <div class="antifocus-wrap" id="antiFocusChips">
+            <div class="af-chip" onclick="toggleAF(this,'Acquisition')">Acquisition</div>
+            <div class="af-chip" onclick="toggleAF(this,'Activation')">Activation</div>
+            <div class="af-chip" onclick="toggleAF(this,'Retention')">Retention</div>
+            <div class="af-chip" onclick="toggleAF(this,'Monetization')">Monetization</div>
+            <div class="af-chip" onclick="toggleAF(this,'Infrastructure')">Infrastructure</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">C · Ограничения</div>
+      <div class="form-grid-3" style="margin-bottom:20px">
+        <div class="field">
+          <label>Стадия продукта</label>
+          <select id="stage">
+            <option value="Idea">Idea</option>
+            <option value="MVP" selected>MVP</option>
+            <option value="Early Growth">Early Growth</option>
+            <option value="Scale">Scale</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ресурс команды</label>
+          <select id="resource">
+            <option value="1 команда" selected>1 команда</option>
+            <option value="2–3 команды">2–3 команды</option>
+            <option value="Без ограничений">Без ограничений</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Бюджет</label>
+          <select id="budget">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Темп</label>
+          <select id="tempo">
+            <option value="aggressive">Aggressive</option>
+            <option value="normal" selected>Normal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Dev-мощность</label>
+          <select id="devCap">
+            <option value="low">Low (&lt;20 SP)</option>
+            <option value="medium" selected>Medium (20–60 SP)</option>
+            <option value="high">High (&gt;60 SP)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="toStep1()">← Назад</button>
+        <button class="btn btn-primary" style="flex:2" onclick="toStep3()">Далее: стратегические гипотезы →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Strategic Hypotheses -->
+  <div id="stratStep3" class="hidden">
+    <div class="card fade-in">
+      <div class="section-tag">Шаг 3 из 3 — Стратегические гипотезы</div>
+      <div class="card-title">Причинно-следственные утверждения</div>
+      <div class="card-sub">Что мы считаем истиной о нашем продукте? Это основа для анализа логических цепочек. (Опционально)</div>
+      <div id="stratHypTags" class="hyp-tags"></div>
+      <div class="add-hyp-row mt8">
+        <input type="text" id="stratHypInput" placeholder='Если мы улучшим онбординг, retention вырастет, потому что...' onkeydown="if(event.key==='Enter')addStratHyp()">
+        <button onclick="addStratHyp()">+ Добавить</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="toStep2()">← Назад</button>
+        <button class="btn btn-primary" style="flex:2" onclick="saveStrategy()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          Сохранить стратегию v<span id="versionPreview">1</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved strategies history -->
+  <div id="stratVersions" class="hidden">
+    <div class="card fade-in">
+      <div class="section-tag purple">Версии стратегии</div>
+      <div id="stratVersionList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- HYPOTHESIS TAB                                 -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="tab-hypothesis" class="hidden">
+  <div class="ctx-strip fade-in" id="contextStrip"></div>
+
+  <!-- AI Suggestions from Office -->
+  <div id="aiSuggestBanner" class="hidden"></div>
+
+  <div class="card fade-in">
+    <div class="section-tag purple">💡 Идеи на основе продукта</div>
+    <div class="card-title">Выбери готовую гипотезу</div>
+    <div class="card-sub">Сгенерированы с учётом фокуса, anti-focus и описания продукта</div>
+    <div class="hyp-chips" id="hypChips"></div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="section-tag">Своя инициатива</div>
+    <div class="card-title">Опиши инициативу</div>
+    <div class="field">
+      <textarea id="hypText" placeholder="Опиши что хочешь сделать и зачем. Чем подробнее — тем точнее анализ.&#10;Пример: Добавить реферальную механику — пользователь получает месяц бесплатно за каждого приглашённого, кто перешёл на платный план."></textarea>
+    </div>
+    <div class="mt16">
+      <button class="btn btn-accent btn-full" onclick="analyzeHyp()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Проанализировать
+      </button>
+    </div>
+  </div>
+
+  <div class="thinking" id="thinkingAnim">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    <span id="thinkingLabel">PAC анализирует гипотезу</span>
+    <div class="dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <!-- ANALYSIS RESULT -->
+  <div id="analysisResult" class="hidden">
+    <div class="analysis-wrap" id="analysisWrap">
+      <div class="card fade-in">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+          <div class="depth-badge" id="depthBadge"></div>
+          <div class="verdict-row" style="margin-bottom:0">
+            <span class="verdict-lbl">Вердикт:</span>
+            <span class="verdict-badge" id="verdictBadge"></span>
+          </div>
+        </div>
+
+        <!-- Score row -->
+        <div class="score-grid" id="scoreGrid"></div>
+
+        <!-- Layer tabs -->
+        <div class="layer-tabs">
+          <button class="layer-tab active" onclick="switchLayer('strategic',this)">Стратегический</button>
+          <button class="layer-tab" onclick="switchLayer('architectural',this)">Архитектурный</button>
+          <button class="layer-tab" onclick="switchLayer('economic',this)">Экономический</button>
+        </div>
+
+        <!-- Strategic layer -->
+        <div class="layer-panel active" id="layer-strategic">
+          <div id="conflictBlock"></div>
+          <div id="causalChain"></div>
+        </div>
+
+        <!-- Architectural layer -->
+        <div class="layer-panel" id="layer-architectural">
+          <div id="archBlock"></div>
+        </div>
+
+        <!-- Economic layer -->
+        <div class="layer-panel" id="layer-economic">
+          <div id="econBlock"></div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="section-tag">Варианты реализации</div>
+        <div class="alts" id="altsBlock"></div>
+
+        <button class="btn btn-primary btn-full mt8" onclick="addToRoadmap()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          Добавить в Roadmap
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- ROADMAP TAB                                    -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="tab-roadmap" class="hidden">
+  <div id="overloadAlert" class="alert"><span>⚠️</span><span id="alertText"></span></div>
+  <div id="snapshotBlock" class="hidden"></div>
+
+  <div class="card fade-in">
+    <div class="section-tag">Roadmap</div>
+    <div class="card-title">Стратегический Roadmap</div>
+    <div class="roadmap-board">
+      <div class="rm-col now">
+        <div class="rm-col-head"><span class="rm-col-title">Now</span><span class="rm-cnt" id="cnt-now">0</span></div>
+        <div class="rm-drop-zone" id="zone-now" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'now')"></div>
+        <div id="items-now"></div>
+      </div>
+      <div class="rm-col next">
+        <div class="rm-col-head"><span class="rm-col-title">Next</span><span class="rm-cnt" id="cnt-next">0</span></div>
+        <div class="rm-drop-zone" id="zone-next" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'next')"></div>
+        <div id="items-next"></div>
+      </div>
+      <div class="rm-col later">
+        <div class="rm-col-head"><span class="rm-col-title">Later</span><span class="rm-cnt" id="cnt-later">0</span></div>
+        <div class="rm-drop-zone" id="zone-later" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'later')"></div>
+        <div id="items-later"></div>
+      </div>
+      <div class="rm-col reject">
+        <div class="rm-col-head"><span class="rm-col-title">Reject</span><span class="rm-cnt" id="cnt-reject">0</span></div>
+        <div class="rm-drop-zone" id="zone-reject" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'reject')"></div>
+        <div id="items-reject"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="section-tag">История решений</div>
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;">Нажми на карточку — откроется полный анализ</div>
+    <div class="history-list" id="historyList">
+      <div style="font-size:.85rem;color:var(--muted);">Пока нет инициатив. Добавь первую!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- AI OFFICE TAB                                  -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="tab-office" class="hidden">
+
+  <div class="card card-ai fade-in">
+    <div class="section-tag purple">🤖 AI Product Office</div>
+    <div class="card-title">Системные инициативы</div>
+    <div class="card-sub">PAC анализирует пробелы в roadmap и генерирует инициативы от своего имени</div>
+    <div id="aiInitiativesBlock">
+      <div style="font-size:.85rem;color:var(--muted);">Инициативы появятся после того как ты добавишь хотя бы одну гипотезу в roadmap.</div>
+    </div>
+    <div class="mt16">
+      <button class="btn btn-ghost btn-sm" onclick="runAIOffice()">↻ Пересгенерировать</button>
+    </div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="section-tag teal">Product Architecture Score</div>
+    <div class="card-title" id="pasCardTitle">Индекс зрелости архитектуры: —</div>
+    <div class="card-sub">Обновляется после каждой гипотезы. Оценивает распределение, связку с метриками и наличие причинных цепочек.</div>
+    <div id="pasBreakdown"></div>
+  </div>
+
+  <div class="card fade-in">
+    <div class="section-tag">Ретроспектива</div>
+    <div class="card-title">Версии стратегии</div>
+    <div class="card-sub">История стратегических изменений с привязкой гипотез</div>
+    <div id="retroBlock">
+      <div style="font-size:.85rem;color:var(--muted);">Сохрани первую стратегию, чтобы начать ретроспективу.</div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="detailModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let product = null;
+let strategyVersions = []; // array of strategy snapshots
+let strategy = null;       // current active strategy
+let stratHyps = [];        // strategic hypotheses
+let currentAnalysis = null;
+let roadmap = { now:[], next:[], later:[], reject:[] };
+let history = [];
+let dragId = null;
+let pasScore = 0;
+window._hypSuggestions = [];
+
+// ══════════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════════
+function showTab(name) {
+  ['strategy','hypothesis','roadmap','office'].forEach(t =>
+    document.getElementById('tab-'+t).classList.add('hidden'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const tabs = ['strategy','hypothesis','roadmap','office'];
+  document.querySelectorAll('.nav-btn')[tabs.indexOf(name)].classList.add('active');
+  if (name === 'office') runAIOffice();
+}
+
+// ══════════════════════════════════════════════════════════
+// STRATEGY STEPPER
+// ══════════════════════════════════════════════════════════
+function setStep(active) {
+  for (let i=1;i<=3;i++) {
+    const el = document.getElementById('step'+i);
+    const line = document.getElementById('line'+i);
+    el.className = 'step' + (i<active?' done':i===active?' active':'');
+    if (i<active) el.querySelector('.step-num').textContent = '✓';
+    else el.querySelector('.step-num').textContent = i;
+    if (line) line.className = 'step-line' + (i<active?' done':'');
+  }
+}
+function toStep1() {
+  setStep(1);
+  document.getElementById('stratStep1').classList.remove('hidden');
+  document.getElementById('stratStep2').classList.add('hidden');
+  document.getElementById('stratStep3').classList.add('hidden');
+}
+function toStep2() {
+  const name = document.getElementById('prodName').value.trim();
+  const desc = document.getElementById('prodDesc').value.trim();
+  if (!name) { alert('Введи название продукта'); return; }
+  if (!desc)  { alert('Напиши краткое описание'); return; }
+  product = {
+    name: name,
+    category: document.getElementById('prodCategory').value,
+    desc: desc,
+    value: document.getElementById('prodValue').value.trim(),
+    audience: document.getElementById('prodAudience').value.trim() || 'пользователей',
+  };
+  setStep(2);
+  document.getElementById('stratStep1').classList.add('hidden');
+  document.getElementById('stratStep2').classList.remove('hidden');
+  document.getElementById('stratStep3').classList.add('hidden');
+}
+function toStep3() {
+  setStep(3);
+  document.getElementById('stratStep2').classList.add('hidden');
+  document.getElementById('stratStep3').classList.remove('hidden');
+  document.getElementById('versionPreview').textContent = strategyVersions.length + 1;
+}
+
+// Anti-focus chips
+function toggleAF(el, val) {
+  el.classList.toggle('selected');
+}
+function getAntiFocus() {
+  return Array.from(document.querySelectorAll('.af-chip.selected')).map(el => el.textContent.trim());
+}
+
+// Strategic hypotheses
+function addStratHyp() {
+  const inp = document.getElementById('stratHypInput');
+  const val = inp.value.trim();
+  if (!val) return;
+  stratHyps.push(val);
+  renderStratHyps();
+  inp.value = '';
+}
+function removeStratHyp(idx) {
+  stratHyps.splice(idx, 1);
+  renderStratHyps();
+}
+function renderStratHyps() {
+  document.getElementById('stratHypTags').innerHTML = stratHyps.map((h,i) =>
+    `<div class="hyp-tag">${esc(h)}<button onclick="removeStratHyp(${i})">×</button></div>`
+  ).join('') || '<div style="font-size:.8rem;color:var(--muted);">Пока пусто — это опционально</div>';
+}
+
+function saveStrategy() {
+  const antiFocus = getAntiFocus();
+  strategy = {
+    version: strategyVersions.length + 1,
+    ts: new Date(),
+    product: { ...product },
+    targetMetric: document.getElementById('targetMetric').value,
+    baselineVal:  document.getElementById('baselineVal').value,
+    targetVal:    document.getElementById('targetVal').value,
+    targetDate:   document.getElementById('targetDate').value,
+    focus:        document.getElementById('focus').value,
+    focus2:       document.getElementById('focus2').value,
+    antiFocus:    antiFocus,
+    stage:        document.getElementById('stage').value,
+    resource:     document.getElementById('resource').value,
+    budget:       document.getElementById('budget').value,
+    tempo:        document.getElementById('tempo').value,
+    devCap:       document.getElementById('devCap').value,
+    stratHyps:    [...stratHyps],
+  };
+  strategyVersions.push({ ...strategy });
+  renderContextStrip();
+  generateSuggestions();
+  renderVersions();
+  updatePAS();
+  showTab('hypothesis');
+}
+
+// ══════════════════════════════════════════════════════════
+// CONTEXT STRIP
+// ══════════════════════════════════════════════════════════
+function renderContextStrip() {
+  if (!strategy) return;
+  const af = strategy.antiFocus.length ? strategy.antiFocus.join(', ') : '—';
+  const focuses = [strategy.focus, strategy.focus2].filter(Boolean).join(' + ');
+  document.getElementById('contextStrip').innerHTML = `
+    <div class="ctx-item"><span class="ctx-lbl">Продукт</span><span class="ctx-val">${esc(strategy.product.name)}</span></div>
+    <div class="ctx-item"><span class="ctx-lbl">Цель</span><span class="ctx-val">${strategy.targetMetric} → ${esc(strategy.targetVal)}</span></div>
+    <div class="ctx-item"><span class="ctx-lbl">Дедлайн</span><span class="ctx-val">${strategy.targetDate}</span></div>
+    <div class="ctx-item"><span class="ctx-lbl">Фокус</span><span class="ctx-val">${focuses}</span></div>
+    <div class="ctx-item"><span class="ctx-lbl">Anti-focus</span><span class="ctx-val af">${af}</span></div>
+    <div class="ctx-item"><span class="ctx-lbl">Ресурс</span><span class="ctx-val">${strategy.resource}</span></div>
+    <div class="ctx-item"><span class="ctx-lbl">v${strategy.version}</span><span class="ctx-val">${fmtDate(strategy.ts)}</span></div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// HYPOTHESIS SUGGESTIONS
+// ══════════════════════════════════════════════════════════
+function generateSuggestions() {
+  if (!strategy) return;
+  const focus = strategy.focus;
+  const af = strategy.antiFocus;
+  const aud = strategy.product.audience;
+  const pname = strategy.product.name;
+  const cat = strategy.product.category;
+  const metric = strategy.targetMetric;
+
+  const byFocus = {
+    Acquisition: [
+      `Реферальная программа: ${aud} получают бонус за каждого приглашённого`,
+      `Бесплатный tier — снизить барьер входа и увеличить воронку`,
+      `Виральная механика «Поделиться результатом» — рост через контент`,
+      `SEO-стратегия: статьи под запросы целевой аудитории ${aud}`,
+      `Партнёрская программа для привлечения через смежные сервисы`,
+    ],
+    Activation: [
+      `Редизайн онбординга: сократить путь до «aha moment» до 3 шагов`,
+      `Интерактивный туториал с подсказками для новых пользователей ${pname}`,
+      `Welcome-последовательность: 5 email за первую неделю`,
+      `Библиотека шаблонов «Начни с готового» — устранить blank slate`,
+      `Персонализация онбординга по сегменту ${aud}`,
+    ],
+    Retention: [
+      `Push-уведомления о прогрессе — возврат неактивных пользователей`,
+      `Механика streak / серий — поощрение регулярного использования`,
+      `Еженедельный дайджест: персональная статистика для ${aud}`,
+      `Collaboration-фичи: совместная работа повышает stickiness`,
+      `Программа лояльности — бонусы за длительную подписку`,
+    ],
+    Monetization: [
+      `Pro-план с расширенными функциями — апгрейд для продвинутых ${aud}`,
+      `Годовая подписка со скидкой — повышение LTV и снижение churn`,
+      `Freemium-ограничения с in-app апгрейд-промптами в нужный момент`,
+      `Командный тариф по числу мест — B2B-монетизация`,
+      `Add-on модули за отдельную плату — расширение ARPU`,
+    ],
+    Infrastructure: [
+      `Рефакторинг ключевых компонентов — снизить tech debt и ускорить доставку`,
+      `Улучшить мониторинг и алертинг — сократить время восстановления`,
+      `Автотестирование критических флоу — уменьшить регрессии`,
+      `Оптимизация производительности — улучшить core user experience`,
+    ],
+  };
+  const byCat = {
+    'SaaS B2B': [`Командный дашборд и управление ролями для корпоративных клиентов`, `API и вебхуки для интеграций`],
+    'EdTech': [`Сертификаты по завершению — мотивация ${aud}`, `Групповые когорты — социальная составляющая`],
+    'FinTech': [`Аналитика и персональные рекомендации для ${aud}`, `Автоматические правила — экономия времени`],
+    'Маркетплейс': [`Программа «Верифицированный продавец»`, `Рекомендательный движок`],
+    'HealthTech': [`Трекер прогресса с визуализацией динамики`, `Интеграция с носимыми устройствами`],
+  };
+
+  let list = [...(byFocus[focus] || [])];
+  if (byCat[cat]) list = [...list, ...byCat[cat]];
+  // Filter out anti-focus topics
+  if (af.length) {
+    const afKw = { Acquisition:['привлеч','рефераль','виральн','seo','партнёрск'], Activation:['онбординг','туториал','шаблон','приветств'], Retention:['streak','push','дайджест','лоялн'], Monetization:['pro-план','годовая','freemium','тариф'], Infrastructure:['рефакторинг','тест','мониторинг'] };
+    af.forEach(a => {
+      const kws = afKw[a] || [];
+      list = list.filter(s => !kws.some(k => s.toLowerCase().includes(k)));
+    });
+  }
+  list = list.sort(() => Math.random() - 0.5).slice(0,6);
+  window._hypSuggestions = list;
+  document.getElementById('hypChips').innerHTML = list.map((s,i) =>
+    `<button class="hyp-chip" data-idx="${i}" onclick="selectChip(this)">${esc(s)}</button>`
+  ).join('');
+}
+
+function selectChip(el) {
+  document.querySelectorAll('.hyp-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const idx = parseInt(el.getAttribute('data-idx'), 10);
+  const text = window._hypSuggestions[idx] || el.textContent;
+  document.getElementById('hypText').value = text;
+  document.getElementById('hypText').focus();
+}
+
+// ══════════════════════════════════════════════════════════
+// SCORING MODEL — weighted formula
+// ══════════════════════════════════════════════════════════
+function scoreHypothesis(text, strat) {
+  const t = text.toLowerCase();
+  const focus  = strat.focus.toLowerCase();
+  const focus2 = (strat.focus2 || '').toLowerCase();
+  const af = strat.antiFocus.map(a => a.toLowerCase());
+  const metric = strat.targetMetric.toLowerCase();
+
+  // ── A. STRATEGIC FIT (0–5) via weighted formula ──
+  // 1. focus_match (0–2)
+  const focusKw = {
+    acquisition:   ['привлеч','рефераль','виральн','трафик','seo','органич','партнёрск','бесплатн','tier','новых'],
+    activation:    ['онбординг','активац','первый шаг','туториал','шаблон','барьер','welcome','aha','blank'],
+    retention:     ['удержан','retention','возврат','streak','push','уведомлен','дайджест','stickiness','лоялн','churn'],
+    monetization:  ['монетизац','оплат','биллинг','тариф','pro-план','premium','ltv','arpu','апгрейд','подписк'],
+    infrastructure:['рефакторинг','технич','мониторинг','автотест','производительн','debt','api','архитектур','инфраструктур'],
+  };
+  const fKws = focusKw[focus] || [];
+  const f2Kws = focusKw[focus2] || [];
+  const fMatch = fKws.filter(k => t.includes(k)).length;
+  const f2Match = f2Kws.filter(k => t.includes(k)).length;
+  const focus_match = Math.min(2, fMatch * 0.8 + f2Match * 0.4);
+
+  // 2. anti_focus_penalty (-2…0)
+  let anti_focus_penalty = 0;
+  af.forEach(a => {
+    const afKws = focusKw[a] || [];
+    const afMatch = afKws.filter(k => t.includes(k)).length;
+    if (afMatch >= 2) anti_focus_penalty = Math.max(anti_focus_penalty, -2);
+    else if (afMatch >= 1) anti_focus_penalty = Math.max(anti_focus_penalty, -1);
+  });
+
+  // 3. metric_alignment (0–2)
+  const metricKw = {
+    'mrr': ['монетизац','оплат','подписк','revenue','доход','тариф','pro'],
+    'arr': ['монетизац','annual','годовая','enterprise','b2b'],
+    'dau/mau': ['engagement','вовлеч','streak','ежедневн','активн'],
+    'retention 30d': ['удержан','retention','streak','возврат','push'],
+    'cac': ['привлеч','рефераль','стоимость','канал','трафик'],
+    'ltv': ['удержан','lояльн','подписк','ltv','churn','apru'],
+    'конверсия': ['онбординг','апгрейд','барьер','воронк','cta'],
+    'nps': ['удовлетвор','качеств','поддержк','experience'],
+    'revenue': ['монетизац','оплат','доход','тариф','b2b'],
+  };
+  const mKws = metricKw[metric] || [];
+  const mMatch = mKws.filter(k => t.includes(k)).length;
+  const metric_alignment = Math.min(2, mMatch * 0.7);
+
+  // 4. constraint_feasibility (0–1)
+  const compKw = ['система','интеграц','биллинг','архитектур','инфраструктур','api','бэкенд','движок','рефакторинг'];
+  const compCount = compKw.filter(k => t.includes(k)).length;
+  const highComplexity = compCount >= 2;
+  let constraint_feasibility = 1;
+  if (highComplexity && strat.resource === '1 команда') constraint_feasibility = 0.3;
+  else if (highComplexity && strat.budget === 'low') constraint_feasibility = 0.5;
+  else if (highComplexity && strat.devCap === 'low') constraint_feasibility = 0.4;
+
+  const rawFit = focus_match + anti_focus_penalty + metric_alignment + constraint_feasibility;
+  const fit = Math.max(0, Math.min(5, Math.round(rawFit * (5/5.0))));
+
+  // ── B. IMPACT (0–5) ──
+  const impactKw = ['рост','масштаб','монетизац','revenue','виральн','x2','удвоен','критич','ltv','конверс','ключевой','core','основн'];
+  const impCount = impactKw.filter(k => t.includes(k)).length;
+  const impact = Math.min(5, 2 + impCount);
+
+  // ── C. COMPLEXITY (0–5) ──
+  const complexity = compCount >= 2 ? 5 : compCount === 1 ? 4 : t.length > 150 ? 3 : t.length > 60 ? 2 : 1;
+
+  // ── D. CONFIDENCE (0–5) ──
+  // Based on causal chain quality
+  const hasMechanism = t.includes('потому что') || t.includes('так как') || t.includes('что позволит') || t.includes('это приведёт') || t.includes('за счёт');
+  const hasMetric = /\d+%|\d+ пользовател|\d+ дней|метрик|измер/.test(t);
+  const isVague = ['возможно','может быть','наверное','непонятно'].some(k => t.includes(k));
+  // Check against strategic hypotheses
+  const contradicts = strat.stratHyps && strat.stratHyps.some(h => {
+    return h.toLowerCase().split(' ').filter(w=>w.length>4).some(w => t.includes(w) && anti_focus_penalty < 0);
+  });
+  let confidence = 4;
+  if (hasMechanism) confidence = Math.min(5, confidence + 1);
+  if (hasMetric) confidence = Math.min(5, confidence + 1);
+  if (isVague) confidence = Math.max(1, confidence - 2);
+  if (!hasMechanism && !hasMetric) confidence = Math.max(2, confidence - 1);
+  if (contradicts) confidence = Math.max(1, confidence - 1);
+
+  // ── VERDICT ──
+  let verdict;
+  if (fit >= 4 && complexity <= 3) verdict = 'now';
+  else if (fit >= 3) verdict = 'next';
+  else if (fit === 2) verdict = 'later';
+  else verdict = 'reject';
+
+  // ── DEPTH ──
+  let depth;
+  if (impact >= 4 || (fit >= 4 && complexity >= 4) || anti_focus_penalty < -1) depth = 'deep';
+  else if (impact >= 3 || complexity >= 3) depth = 'standard';
+  else depth = 'quick';
+
+  return { fit, impact, complexity, confidence, verdict, depth,
+    focus_match: Math.round(focus_match*10)/10,
+    anti_focus_penalty,
+    metric_alignment: Math.round(metric_alignment*10)/10,
+    constraint_feasibility: Math.round(constraint_feasibility*10)/10,
+    hasMechanism, hasMetric, compCount,
+  };
+}
+
+// ── CAUSAL CHAIN ──
+function buildCausalChain(text, scores, strat) {
+  const t = text.toLowerCase();
+
+  // Detect what user described
+  const actionKw = {
+    'реферальная механика': ['рефераль','реферальн'],
+    'онбординг': ['онбординг','туториал','first step'],
+    'push-уведомления': ['push','уведомлен','нотификац'],
+    'новый тариф/план': ['тариф','pro','premium','план'],
+    'интеграция': ['интеграц','api','вебхук'],
+    'редизайн': ['редизайн','ux','интерфейс','дизайн'],
+    'аналитика': ['аналитик','дашборд','метрик'],
+    'партнёрство': ['партнёрств','интеграц с'],
+  };
+  let action = 'Инициатива';
+  for (const [name, kws] of Object.entries(actionKw)) {
+    if (kws.some(k => t.includes(k))) { action = name; break; }
+  }
+
+  // Behaviour prediction
+  const behaviourMap = {
+    'реферальная механика': 'Пользователи приглашают друзей → виральный рост базы',
+    'онбординг': 'Новые пользователи быстрее доходят до ценности продукта',
+    'push-уведомления': 'Неактивные пользователи возвращаются в продукт',
+    'новый тариф/план': 'Пользователи free-tier конвертируются в платящих',
+    'интеграция': 'Продукт встраивается в рабочий процесс пользователя',
+    'редизайн': 'Снижается трение при выполнении ключевых действий',
+    'аналитика': 'Пользователи видят ценность → повышается вовлечённость',
+    'партнёрство': 'Новые каналы привлечения + доверие через ассоциацию',
+  };
+  const behaviour = behaviourMap[action] || 'Пользователи меняют поведение в продукте';
+
+  // Intermediate metric
+  const interMap = {
+    'реферальная механика': 'Новые регистрации / Viral coefficient',
+    'онбординг': 'Activation rate / Time-to-value',
+    'push-уведомления': 'DAU / Return rate',
+    'новый тариф/план': 'Conversion rate / MRR',
+    'интеграция': 'Retention / Daily active rate',
+    'редизайн': 'Conversion rate / Task completion',
+    'аналитика': 'Engagement / Feature adoption',
+    'партнёрство': 'Acquisition / Referral traffic',
+  };
+  const interMetric = interMap[action] || 'Ключевая engagement-метрика';
+
+  // Target metric
+  const targetMetric = strat.targetMetric;
+
+  // Find weak links
+  const weakLinks = [];
+  if (!scores.hasMechanism) weakLinks.push('Не описан механизм влияния — неясно, почему изменится поведение пользователя');
+  if (!scores.hasMetric) weakLinks.push(`Нет измеримой метрики — сложно отследить влияние на ${targetMetric}`);
+  if (scores.anti_focus_penalty < -1) weakLinks.push(`Инициатива направлена в зону anti-focus — она работает против стратегии квартала`);
+  if (scores.confidence <= 2) weakLinks.push('Низкий confidence: описание слишком размытое или противоречиво');
+
+  // Logical gap to target
+  const focusToTarget = {
+    Acquisition: { MRR:'Больше пользователей → больше конверсий → рост MRR', ARR:'Расширение базы → корп. контракты → рост ARR', 'Retention 30d':'⚠️ Acquisition напрямую не влияет на 30d retention' },
+    Activation:  { 'DAU/MAU':'Быстрый AHA → регулярное использование → DAU/MAU↑', MRR:'Активированные пользователи конвертируются лучше', 'Retention 30d':'Activation — прямой предиктор 30d retention' },
+    Retention:   { 'DAU/MAU':'Удержание → ежедневные визиты → DAU/MAU↑', LTV:'Меньше churn → LTV↑', MRR:'Меньше оттока → стабильный MRR' },
+    Monetization:{ MRR:'Конверсия в платных → прямой рост MRR', ARR:'Годовые подписки → ARR↑', LTV:'Рост ARPU → LTV↑' },
+    Infrastructure:{ 'DAU/MAU':'Стабильность → доверие → retention', MRR:'Косвенно через улучшение experience' },
+  };
+  const focusMap = focusToTarget[strat.focus] || {};
+  const gapText = focusMap[targetMetric] || `${strat.focus} → ${targetMetric}: логическая цепочка требует проверки`;
+
+  return { action, behaviour, interMetric, targetMetric, gapText, weakLinks };
+}
+
+// ── GENERATE CONFLICT ──
+function generateConflict(scores, strat) {
+  const msgs = [];
+  if (scores.anti_focus_penalty <= -2) msgs.push(`<strong>Прямой конфликт с anti-focus.</strong> Инициатива направлена в зону, от которой мы намеренно отказались (${strat.antiFocus.join(', ')}).`);
+  else if (scores.anti_focus_penalty < 0) msgs.push(`Частичное пересечение с anti-focus (${strat.antiFocus.join(', ')}). Требует осторожности.`);
+  if (scores.fit <= 2) msgs.push(`Слабое соответствие фокусу квартала (${strat.focus}). Инициатива смещает ресурс не туда.`);
+  if (!msgs.length) return '<div class="conflict-box ok">✓ Нет стратегических конфликтов. Инициатива соответствует фокусу.</div>';
+  return msgs.map(m => `<div class="conflict-box">⚠️ ${m}</div>`).join('');
+}
+
+// ── GENERATE ALTS ──
+function generateAlts(text, prod) {
+  const pname = prod ? prod.name : 'продукта';
+  const short = text.length > 55 ? text.substring(0,52)+'…' : text;
+  return [
+    { cls:'alt-lean', label:'Lean', desc:`Минимальная версия: ${short}. Только ключевая механика без интеграций и edge cases — 1–2 недели, минимум SP.` },
+    { cls:'alt-exp',  label:'Experiment', desc:`A/B-тест на 10–15% аудитории ${pname}. Замерить целевую метрику через 2 недели — решить по данным, не по мнению.` },
+    { cls:'alt-full', label:'Full', desc:`Полная реализация с аналитикой, edge cases и масштабируемой архитектурой — 4–6 недель, высокие вложения.` },
+  ];
+}
+
+// ══════════════════════════════════════════════════════════
+// ANALYZE
+// ══════════════════════════════════════════════════════════
+function analyzeHyp() {
+  const text = document.getElementById('hypText').value.trim();
+  if (!text) { alert('Введи описание инициативы'); return; }
+  if (!strategy) { alert('Сначала сохрани стратегию'); return; }
+
+  document.getElementById('analysisResult').classList.add('hidden');
+  document.getElementById('analysisWrap').classList.remove('visible');
+  const thinking = document.getElementById('thinkingAnim');
+  thinking.classList.add('show');
+
+  // Animated thinking labels
+  const labels = ['Оцениваю стратегический fit…','Строю причинную цепочку…','Анализирую архитектурные риски…','Считаю экономику…'];
+  let li = 0;
+  const labelEl = document.getElementById('thinkingLabel');
+  const interval = setInterval(() => { li=(li+1)%labels.length; labelEl.textContent = labels[li]; }, 600);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    thinking.classList.remove('show');
+    labelEl.textContent = 'PAC анализирует гипотезу';
+
+    const scores = scoreHypothesis(text, strategy);
+    const causal = buildCausalChain(text, scores, strategy);
+    const alts = generateAlts(text, product);
+    const conflictHtml = generateConflict(scores, strategy);
+    currentAnalysis = { text, scores, causal, alts, conflictHtml, ts: new Date(), isAI: false };
+
+    renderAnalysis(currentAnalysis);
+
+    document.getElementById('analysisResult').classList.remove('hidden');
+    setTimeout(() => document.getElementById('analysisWrap').classList.add('visible'), 50);
+  }, scores ? 2500 : 2500);
+
+  // Pre-calc scores for timing
+  var scores = scoreHypothesis(text, strategy);
+}
+
+function renderAnalysis(analysis) {
+  const { scores, causal, alts, conflictHtml } = analysis;
+
+  // Depth badge
+  const depthMap = { quick:['Quick Analysis','depth-quick'], standard:['Standard Analysis','depth-standard'], deep:['Deep Architecture Review','depth-deep'] };
+  const db = document.getElementById('depthBadge');
+  db.textContent = depthMap[scores.depth][0];
+  db.className = 'depth-badge ' + depthMap[scores.depth][1];
+
+  // Verdict
+  const vmap = { now:['Now','verdict-now'], next:['Next','verdict-next'], later:['Later','verdict-later'], reject:['Reject','verdict-reject'] };
+  const vb = document.getElementById('verdictBadge');
+  vb.textContent = vmap[scores.verdict][0];
+  vb.className = 'verdict-badge ' + vmap[scores.verdict][1];
+
+  // Scores
+  const scoreItems = [
+    { key:'fit',        label:'Strategic Fit', note:'Weighted formula' },
+    { key:'impact',     label:'Impact',        note:'На target-метрику' },
+    { key:'complexity', label:'Complexity',    note:'Инженерная нагрузка' },
+    { key:'confidence', label:'Confidence',    note:'Качество гипотезы' },
+  ];
+  document.getElementById('scoreGrid').innerHTML = scoreItems.map(s => {
+    const v = scores[s.key];
+    const pct = (v/5)*100;
+    const color = s.key==='complexity'
+      ? (v>=4?'var(--danger)':v>=3?'var(--warn)':'var(--success)')
+      : (v>=4?'var(--success)':v>=3?'var(--accent)':'var(--warn)');
+    return `<div class="score-item">
+      <div class="score-name">${s.label}</div>
+      <div class="score-row">
+        <div class="score-val">${v}<span style="font-size:.75rem;opacity:.4">/5</span></div>
+        <div class="score-bar"><div class="score-fill" style="width:${pct}%;background:${color}"></div></div>
+      </div>
+      <div style="font-size:.65rem;color:var(--muted)">${s.note}</div>
+    </div>`;
+  }).join('');
+
+  // Strategic layer
+  document.getElementById('conflictBlock').innerHTML = conflictHtml;
+
+  // Causal chain (show only for standard/deep)
+  let chainHtml = '';
+  if (scores.depth !== 'quick') {
+    const broken = causal.weakLinks.length > 0;
+    chainHtml = `
+      <div style="font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:16px 0 10px;">Причинно-следственная цепочка</div>
+      <div class="chain">
+        <div class="chain-node"><div class="cn-lbl">Инициатива</div><div class="cn-val">${esc(causal.action)}</div></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-node"><div class="cn-lbl">Поведение</div><div class="cn-val">${esc(causal.behaviour)}</div></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-node"><div class="cn-lbl">Метрика</div><div class="cn-val">${esc(causal.interMetric)}</div></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-node ${broken?'broken':''}"><div class="cn-lbl">Target</div><div class="cn-val">${esc(causal.targetMetric)}</div></div>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);background:#F7F8FF;border-radius:8px;padding:8px 12px;margin-top:8px;">${esc(causal.gapText)}</div>
+      ${causal.weakLinks.map(w => `<div class="weak-link">⚠️ <span>${esc(w)}</span></div>`).join('')}
+    `;
+  }
+  document.getElementById('causalChain').innerHTML = chainHtml;
+
+  // Architectural layer
+  const total = Object.values(roadmap).reduce((a,v)=>a+v.length,0);
+  const archRisk = scores.complexity >= 4 ? 'high' : scores.complexity >= 3 ? 'medium' : 'low';
+  const archRiskLabel = { high:'High Risk', medium:'Medium Risk', low:'Low Risk' };
+  const focusItems = Object.entries(
+    [...roadmap.now,...roadmap.next].reduce((acc,item) => {
+      const zone = item.zone; acc[zone]=(acc[zone]||0)+1; return acc;
+    },{})
+  );
+  const activeCount = roadmap.now.length + roadmap.next.length;
+  document.getElementById('archBlock').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <div class="risk-badge risk-${archRisk}">${archRiskLabel[archRisk]}</div>
+      ${scores.compCount >= 2 ? '<span style="font-size:.8rem;color:var(--muted);">Высокая техническая сложность</span>' : ''}
+    </div>
+    ${scores.complexity >= 4 && strategy.resource === '1 команда' ? '<div class="conflict-box">⚠️ Высокая сложность при ресурсе "1 команда" — риск перегруза команды.</div>' : ''}
+    ${scores.complexity >= 4 && strategy.devCap === 'low' ? '<div class="conflict-box">⚠️ Низкая dev-мощность не соответствует сложности инициативы.</div>' : ''}
+    ${roadmap.now.length >= 3 ? `<div class="conflict-box">⚠️ В Now уже ${roadmap.now.length} задачи — добавление создаст перегруз фокуса.</div>` : '<div class="conflict-box ok">✓ Нет перегруза Now-колонки.</div>'}
+    <div style="font-size:.8rem;color:var(--muted);margin-top:10px;">Активных инициатив (Now+Next): <strong>${activeCount}</strong></div>
+  `;
+
+  // Economic layer
+  const econMap = {
+    Acquisition:   { ltv:'neutral',   cac:'strengthens', cod:'medium', coi: scores.complexity >= 4 ? 'high' : 'medium' },
+    Activation:    { ltv:'strengthens', cac:'neutral',  cod:'high',   coi: scores.complexity >= 3 ? 'medium' : 'low' },
+    Retention:     { ltv:'strengthens', cac:'neutral',  cod:'high',   coi:'medium' },
+    Monetization:  { ltv:'strengthens', cac:'neutral',  cod:'high',   coi: scores.complexity >= 4 ? 'high' : 'medium' },
+    Infrastructure:{ ltv:'neutral',   cac:'neutral',  cod:'low',    coi:'high' },
+  };
+  const econ = econMap[strategy.focus] || econMap.Acquisition;
+  const eLabel = { strengthens:'Positive', neutral:'Neutral', risky:'Risky', low:'Low', medium:'Medium', high:'High' };
+  const eCls = { strengthens:'econ-pos', neutral:'econ-neu', risky:'econ-neg', low:'econ-pos', medium:'econ-neu', high:'econ-neg' };
+  document.getElementById('econBlock').innerHTML = `
+    <div class="econ-row">
+      <div class="econ-item"><div class="econ-lbl">Влияние на LTV</div><div class="econ-val ${eCls[econ.ltv]}">${eLabel[econ.ltv]}</div></div>
+      <div class="econ-item"><div class="econ-lbl">Влияние на CAC</div><div class="econ-val ${eCls[econ.cac]}">${eLabel[econ.cac]}</div></div>
+      <div class="econ-item"><div class="econ-lbl">Cost of Delay</div><div class="econ-val ${eCls[econ.cod]}">${eLabel[econ.cod]}</div></div>
+      <div class="econ-item"><div class="econ-lbl">Cost of Implementation</div><div class="econ-val ${eCls[econ.coi]}">${eLabel[econ.coi]}</div></div>
+    </div>
+    <div style="font-size:.8rem;color:var(--muted);background:#F7F8FF;border-radius:8px;padding:10px 14px;">
+      ${econ.cod==='high' ? '⚡ Высокий Cost of Delay — откладывание снизит ценность инициативы.' : econ.cod==='low' ? '⏳ Низкий Cost of Delay — инициатива не теряет ценность при переносе.' : '↔ Умеренный Cost of Delay — можно планировать без срочности.'}
+    </div>
+  `;
+
+  // Alts
+  document.getElementById('altsBlock').innerHTML = alts.map(a =>
+    `<div class="alt-item"><span class="alt-badge ${a.cls}">${a.label}</span><span>${esc(a.desc)}</span></div>`
+  ).join('');
+}
+
+function switchLayer(name, btn) {
+  document.querySelectorAll('.layer-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.layer-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('layer-'+name).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+// ADD TO ROADMAP
+// ══════════════════════════════════════════════════════════
+function addToRoadmap(analysisObj, fromAI) {
+  const a = analysisObj || currentAnalysis;
+  if (!a) return;
+  const { text, scores, causal, alts, conflictHtml, ts } = a;
+  const id = 'rm-'+Date.now()+Math.random().toString(36).slice(2,6);
+  const item = {
+    id, text, scores, causal, alts, conflictHtml, ts,
+    zone: scores.verdict, isAI: !!fromAI,
+    stratCtx: strategy ? { ...strategy } : null,
+    prodCtx: product ? { name:product.name, category:product.category, audience:product.audience } : null,
+  };
+  roadmap[scores.verdict].push(item);
+  history.push(item);
+  if (!fromAI) {
+    document.getElementById('hypText').value = '';
+    document.querySelectorAll('.hyp-chip').forEach(c => c.classList.remove('selected'));
+    document.getElementById('analysisResult').classList.add('hidden');
+    document.getElementById('analysisWrap').classList.remove('visible');
+    currentAnalysis = null;
+    showTab('roadmap');
+  }
+  renderRoadmap();
+  renderHistory();
+  checkAlerts();
+  updatePAS();
+  checkAIBanner();
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER ROADMAP
+// ══════════════════════════════════════════════════════════
+function renderRoadmap() {
+  const zones = ['now','next','later','reject'];
+  zones.forEach(z => {
+    document.getElementById('cnt-'+z).textContent = roadmap[z].length;
+    document.getElementById('items-'+z).innerHTML = roadmap[z].map(item => `
+      <div class="rm-card" id="${item.id}" draggable="true"
+           ondragstart="onDragStart(event,'${item.id}')" ondragend="onDragEnd(event)">
+        <div class="rm-card-title">${esc(item.text.substring(0,65))}${item.text.length>65?'…':''}</div>
+        <div class="rm-card-meta">Fit ${item.scores.fit}/5 · Conf ${item.scores.confidence}/5 · ${fmtDate(item.ts)}</div>
+        <div class="rm-card-badges">
+          <span class="rm-card-badge ${item.isAI?'badge-ai':'badge-user'}">${item.isAI?'AI':'User'}</span>
+          <span class="rm-card-badge" style="background:#F7F8FF;color:var(--muted)">v${item.stratCtx?item.stratCtx.version:'?'}</span>
+        </div>
+        <button class="rm-card-btn" onclick="event.stopPropagation();openModal('${item.id}')">Полный анализ →</button>
+      </div>
+    `).join('');
+  });
+  renderSnapshot();
+}
+
+function renderHistory() {
+  if (!history.length) return;
+  const dc = { now:'dot-now',next:'dot-next',later:'dot-later',reject:'dot-reject' };
+  const vc = { now:'verdict-now',next:'verdict-next',later:'verdict-later',reject:'verdict-reject' };
+  const vl = { now:'Now',next:'Next',later:'Later',reject:'Reject' };
+  document.getElementById('historyList').innerHTML = [...history].reverse().map(item => `
+    <div class="history-item" onclick="openModal('${item.id}')">
+      <div class="history-dot ${dc[item.zone]}"></div>
+      <div style="flex:1">
+        <div style="font-weight:500;line-height:1.4">${esc(item.text.substring(0,80))}${item.text.length>80?'…':''}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px">${fmtDate(item.ts)} ${item.isAI?'· <span style="color:var(--purple)">AI-инициатива</span>':''}</div>
+        <div class="history-hint">Нажми для полного анализа →</div>
+      </div>
+      <span class="verdict-badge ${vc[item.zone]}" style="flex-shrink:0;font-size:.7rem;padding:3px 11px">${vl[item.zone]}</span>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// AI PRODUCT OFFICE
+// ══════════════════════════════════════════════════════════
+function runAIOffice() {
+  if (!strategy) {
+    document.getElementById('aiInitiativesBlock').innerHTML = '<div style="font-size:.85rem;color:var(--muted);">Сначала сохрани стратегию.</div>';
+    return;
+  }
+  const all = [...roadmap.now,...roadmap.next,...roadmap.later,...roadmap.reject,...history];
+  if (all.length === 0) {
+    document.getElementById('aiInitiativesBlock').innerHTML = '<div style="font-size:.85rem;color:var(--muted);">Инициативы появятся после добавления первой гипотезы в roadmap.</div>';
+    return;
+  }
+
+  // Find gaps
+  const ZONES = ['Acquisition','Activation','Retention','Monetization','Infrastructure'];
+  const coverage = {};
+  ZONES.forEach(z => coverage[z] = 0);
+  all.forEach(item => {
+    const t = item.text.toLowerCase();
+    const kw = {
+      Acquisition:['привлеч','рефераль','виральн','трафик'],
+      Activation:['онбординг','туториал','шаблон'],
+      Retention:['удержан','streak','push','дайджест'],
+      Monetization:['монетизац','тариф','pro','ltv'],
+      Infrastructure:['рефакторинг','мониторинг','debt'],
+    };
+    for (const [z, kws] of Object.entries(kw)) {
+      if (kws.some(k => t.includes(k))) coverage[z]++;
+    }
+  });
+
+  const initiatives = [];
+  // Focus areas with 0 items
+  ZONES.forEach(z => {
+    if (coverage[z] === 0 && z === strategy.focus) {
+      initiatives.push({
+        title: `Нет инициатив по ${z}`,
+        reason: `Фокус квартала — ${z}, но в roadmap нет ни одной инициативы этого направления.`,
+        suggestion: z === 'Retention' ? 'Рассмотри: push-уведомления, дайджест или streak-механику' :
+                    z === 'Acquisition' ? 'Рассмотри: реферальную программу или SEO-контент' :
+                    z === 'Monetization' ? 'Рассмотри: Pro-план или апгрейд-промпты' :
+                    z === 'Activation' ? 'Рассмотри: онбординг-редизайн или шаблонную библиотеку' : 'Рассмотри infrastructure задачи',
+        urgency: 'high',
+      });
+    } else if (coverage[z] === 0 && !strategy.antiFocus.includes(z)) {
+      initiatives.push({
+        title: `Слепое пятно: направление ${z} не охвачено`,
+        reason: `В roadmap нет инициатив по ${z}, хотя оно не находится в anti-focus.`,
+        suggestion: 'Возможно стоит добавить хотя бы 1 эксперимент в этой зоне.',
+        urgency: 'medium',
+      });
+    }
+  });
+
+  // Now overload
+  if (roadmap.now.length > 3) {
+    initiatives.push({
+      title: 'Перегруз Now-колонки',
+      reason: `В Now ${roadmap.now.length} инициатив — фокус размыт, команда рискует не завершить ничего.`,
+      suggestion: 'Переведи 1–2 инициативы в Next или Later.',
+      urgency: 'high',
+    });
+  }
+
+  // Focus concentration
+  const total = all.length;
+  ZONES.forEach(z => {
+    if (coverage[z] / total >= 0.65) {
+      initiatives.push({
+        title: `Перекос в сторону ${z}`,
+        reason: `${Math.round(coverage[z]/total*100)}% инициатив сосредоточены в ${z}. Продукт развивается однобоко.`,
+        suggestion: 'Добавь инициативы в смежные направления для баланса.',
+        urgency: 'medium',
+      });
+    }
+  });
+
+  if (!initiatives.length) {
+    document.getElementById('aiInitiativesBlock').innerHTML = '<div style="font-size:.85rem;color:var(--success);">✓ Явных пробелов нет. Roadmap выглядит сбалансированно.</div>';
+    return;
+  }
+
+  const urgencyCls = { high:'danger', medium:'warn' };
+  document.getElementById('aiInitiativesBlock').innerHTML = initiatives.map((init, idx) => `
+    <div class="ai-initiative">
+      <div class="ai-initiative-text">
+        <div class="ai-initiative-title">
+          <span class="section-tag ${urgencyCls[init.urgency]}" style="font-size:.65rem;padding:2px 8px;margin-bottom:0;margin-right:8px;">${init.urgency==='high'?'❗ Важно':'⚠️ Внимание'}</span>
+          ${esc(init.title)}
+        </div>
+        <div class="ai-initiative-reason" style="margin-top:6px;">${esc(init.reason)}</div>
+        <div style="font-size:.78rem;color:var(--accent);margin-top:4px;">💡 ${esc(init.suggestion)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Update dot
+  document.getElementById('dotOffice').classList.add('show');
+}
+
+function checkAIBanner() {
+  if (!strategy) return;
+  const total = Object.values(roadmap).reduce((a,v)=>a+v.length,0);
+  if (total === 0) return;
+  const focusKw = {
+    Acquisition:['привлеч','рефераль','виральн','трафик'],
+    Activation:['онбординг','туториал','шаблон'],
+    Retention:['удержан','streak','push'],
+    Monetization:['монетизац','тариф','pro'],
+    Infrastructure:['рефакторинг','мониторинг'],
+  };
+  const focus = strategy.focus;
+  const kws = focusKw[focus] || [];
+  const hasFocusItem = history.some(h => kws.some(k => h.text.toLowerCase().includes(k)));
+  const banner = document.getElementById('aiSuggestBanner');
+  if (!hasFocusItem) {
+    banner.classList.remove('hidden');
+    banner.innerHTML = `
+      <div class="ai-panel fade-in">
+        <div class="ai-panel-title">🤖 Замечание PAC</div>
+        <div class="ai-panel-sub">В roadmap нет инициатив по текущему фокусу: <strong>${focus}</strong>. Выбери одну из предложенных выше или опиши свою.</div>
+      </div>
+    `;
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// PRODUCT ARCHITECTURE SCORE
+// ══════════════════════════════════════════════════════════
+function updatePAS() {
+  if (!strategy) return;
+  const all = [...roadmap.now,...roadmap.next,...roadmap.later,...roadmap.reject,...history.filter(h=>!roadmap.now.concat(roadmap.next,roadmap.later,roadmap.reject).find(r=>r.id===h.id))];
+  const total = history.length;
+  if (total === 0) return;
+
+  // Criteria
+  const distribution = (() => {
+    const zones = ['now','next','later','reject'];
+    const counts = zones.map(z => roadmap[z].length);
+    const mx = Math.max(...counts);
+    const sum = counts.reduce((a,b)=>a+b,0);
+    if (sum === 0) return 50;
+    return mx/sum < 0.6 ? 100 : mx/sum < 0.75 ? 65 : 30;
+  })();
+
+  const metricLink = (() => {
+    const withMetric = history.filter(h => h.scores.confidence >= 4).length;
+    return Math.round((withMetric/total)*100);
+  })();
+
+  const causalQuality = (() => {
+    const withChain = history.filter(h => h.scores.hasMechanism || h.scores.hasMetric).length;
+    return Math.round((withChain/total)*100);
+  })();
+
+  const nowHealth = roadmap.now.length <= 3 ? 100 : roadmap.now.length <= 5 ? 60 : 20;
+
+  const fitAvg = history.length ? Math.round(history.reduce((a,h)=>a+h.scores.fit,0)/history.length*20) : 50;
+
+  pasScore = Math.round((distribution*0.25 + metricLink*0.2 + causalQuality*0.2 + nowHealth*0.2 + fitAvg*0.15));
+  pasScore = Math.min(100, Math.max(0, pasScore));
+
+  document.getElementById('pasVal').textContent = pasScore;
+  document.getElementById('pasBar').style.width = pasScore + '%';
+  const bar = document.getElementById('pasBar');
+  bar.style.background = pasScore >= 70 ? 'var(--success)' : pasScore >= 45 ? 'var(--warn)' : 'var(--danger)';
+
+  document.getElementById('pasCardTitle').textContent = `Индекс зрелости архитектуры: ${pasScore}/100`;
+  document.getElementById('pasBreakdown').innerHTML = `
+    <div class="econ-row">
+      <div class="econ-item"><div class="econ-lbl">Распределение</div><div class="econ-val ${distribution>=80?'econ-pos':distribution>=50?'econ-neu':'econ-neg'}">${distribution}/100</div></div>
+      <div class="econ-item"><div class="econ-lbl">Связка с метрикой</div><div class="econ-val ${metricLink>=70?'econ-pos':metricLink>=40?'econ-neu':'econ-neg'}">${metricLink}/100</div></div>
+      <div class="econ-item"><div class="econ-lbl">Причинные цепочки</div><div class="econ-val ${causalQuality>=70?'econ-pos':causalQuality>=40?'econ-neu':'econ-neg'}">${causalQuality}/100</div></div>
+      <div class="econ-item"><div class="econ-lbl">Здоровье Now</div><div class="econ-val ${nowHealth>=80?'econ-pos':nowHealth>=50?'econ-neu':'econ-neg'}">${nowHealth}/100</div></div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// VERSIONS & RETRO
+// ══════════════════════════════════════════════════════════
+function renderVersions() {
+  const block = document.getElementById('retroBlock');
+  if (!strategyVersions.length) return;
+  document.getElementById('stratVersions').classList.remove('hidden');
+  const list = [...strategyVersions].reverse();
+  document.getElementById('stratVersionList').innerHTML = list.map(v => `
+    <div style="padding:12px 14px;background:#F7F8FF;border-radius:10px;margin-bottom:10px;font-size:.85rem">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span class="version-badge">v${v.version}</span>
+        <span style="font-size:.78rem;color:var(--muted)">${fmtDate(v.ts)}</span>
+      </div>
+      <div>Фокус: <strong>${v.focus}${v.focus2?' + '+v.focus2:''}</strong> · Цель: <strong>${v.targetMetric} → ${esc(v.targetVal)}</strong> · ${v.targetDate}</div>
+      ${v.antiFocus.length ? `<div style="font-size:.78rem;color:#B91C1C;margin-top:3px">Anti-focus: ${v.antiFocus.join(', ')}</div>` : ''}
+      ${v.stratHyps.length ? `<div style="font-size:.75rem;color:var(--muted);margin-top:4px">${v.stratHyps.length} стратегических гипотез</div>` : ''}
+    </div>
+  `).join('');
+  block.innerHTML = document.getElementById('stratVersionList').outerHTML;
+}
+
+// ══════════════════════════════════════════════════════════
+// ALERTS & SNAPSHOT
+// ══════════════════════════════════════════════════════════
+function checkAlerts() {
+  const total = Object.values(roadmap).reduce((a,v)=>a+v.length,0);
+  const msgs = [];
+  if (roadmap.now.length > 3) msgs.push(`Фокус перегружен: в колонке "Now" ${roadmap.now.length} задачи (норма ≤ 3).`);
+  if (total >= 3) {
+    ['now','next','later','reject'].forEach(z => {
+      if (roadmap[z].length/total >= 0.7) {
+        const lbl = {now:'Now',next:'Next',later:'Later',reject:'Reject'};
+        msgs.push(`70%+ задач в "${lbl[z]}" — возможен стратегический перекос.`);
+      }
+    });
+  }
+  document.getElementById('dotRoadmap').classList.toggle('show', msgs.length > 0);
+  const el = document.getElementById('overloadAlert');
+  if (msgs.length) { document.getElementById('alertText').innerHTML = msgs.join('<br>'); el.classList.add('show'); }
+  else el.classList.remove('show');
+}
+
+function renderSnapshot() {
+  const total = Object.values(roadmap).reduce((a,v)=>a+v.length,0);
+  const snap = document.getElementById('snapshotBlock');
+  if (total < 3) { snap.classList.add('hidden'); return; }
+  const nowCount = roadmap.now.length;
+  const warnings = [];
+  if (nowCount > 3) warnings.push(`Колонка "Now" перегружена (${nowCount} задачи).`);
+  const pcts = ['now','next','later','reject'].map(z => {
+    const p = Math.round((roadmap[z].length/total)*100);
+    const lbl = {now:'Now',next:'Next',later:'Later',reject:'Reject'};
+    return `<span style="opacity:.8">${lbl[z]}</span>: <strong>${p}%</strong>`;
+  }).join(' · ');
+  snap.classList.remove('hidden');
+  snap.innerHTML = `
+    <div class="snapshot-card fade-in">
+      <div class="snapshot-title">Снимок архитектуры продукта</div>
+      <div class="snapshot-sub">${strategy ? esc(strategy.product.name)+' · ' : ''}PAS: <strong>${pasScore}/100</strong></div>
+      <div class="snapshot-stats">
+        <div class="snap-stat"><div class="snap-stat-val">${total}</div><div class="snap-stat-lbl">Инициатив</div></div>
+        <div class="snap-stat"><div class="snap-stat-val">${nowCount}</div><div class="snap-stat-lbl">В Now</div></div>
+        <div class="snap-stat"><div class="snap-stat-val">${strategy ? strategy.focus : '—'}</div><div class="snap-stat-lbl">Фокус</div></div>
+        <div class="snap-stat"><div class="snap-stat-val">v${strategy ? strategy.version : '—'}</div><div class="snap-stat-lbl">Стратегия</div></div>
+      </div>
+      <div style="font-size:.82rem;opacity:.75;margin-bottom:14px">${pcts}</div>
+      ${warnings.map(w=>`<div class="snapshot-warn">⚠️ ${w}</div>`).join('')}
+      <div class="snapshot-quote">Теперь решения принимаются в контексте стратегии, а не изолированно.</div>
+      <button class="btn btn-ghost btn-full" style="margin-top:18px;border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1)" onclick="resetAll()">Начать заново</button>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════
+function openModal(id) {
+  const item = history.find(h => h.id === id);
+  if (!item) return;
+  const vc = {now:'verdict-now',next:'verdict-next',later:'verdict-later',reject:'verdict-reject'};
+  const vl = {now:'Now',next:'Next',later:'Later',reject:'Reject'};
+  const scoreNames = [
+    {key:'fit',label:'Strategic Fit'},{key:'impact',label:'Impact'},
+    {key:'complexity',label:'Complexity'},{key:'confidence',label:'Confidence'},
+  ];
+
+  document.getElementById('modalTitle').textContent = item.text.substring(0,90)+(item.text.length>90?'…':'');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-section">
+      <div class="modal-section-title">Полный текст</div>
+      <div class="modal-text-box">${esc(item.text)}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Вердикт и оценки</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <span class="verdict-badge ${vc[item.zone]}">${vl[item.zone]}</span>
+        ${item.isAI?'<span style="font-size:.75rem;background:#EDE9FE;color:#5B21B6;padding:3px 10px;border-radius:6px;font-weight:600">AI-инициатива</span>':''}
+        <span style="font-size:.8rem;color:var(--muted)">${fmtDate(item.ts)}</span>
+      </div>
+      <div class="modal-score-row">
+        ${scoreNames.map(s => {
+          const v = item.scores[s.key];
+          const color = s.key==='complexity'?(v>=4?'var(--danger)':v>=3?'var(--warn)':'var(--success)'):(v>=4?'var(--success)':v>=3?'var(--accent)':'var(--warn)');
+          return `<div class="modal-score-chip"><div class="val" style="color:${color}">${v}/5</div><div class="lbl">${s.label}</div></div>`;
+        }).join('')}
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);margin-top:10px" class="mono">
+        focus_match: ${item.scores.focus_match} · metric_align: ${item.scores.metric_alignment} · af_penalty: ${item.scores.anti_focus_penalty} · feasibility: ${item.scores.constraint_feasibility}
+      </div>
+    </div>
+
+    ${item.causal ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Причинная цепочка</div>
+      <div class="chain" style="margin:0">
+        <div class="chain-node" style="min-width:80px"><div class="cn-lbl">Инициатива</div><div class="cn-val">${esc(item.causal.action)}</div></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-node" style="min-width:80px"><div class="cn-lbl">Поведение</div><div class="cn-val">${esc(item.causal.behaviour)}</div></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-node" style="min-width:80px"><div class="cn-lbl">Метрика</div><div class="cn-val">${esc(item.causal.interMetric)}</div></div>
+        <div class="chain-arrow">→</div>
+        <div class="chain-node" style="min-width:80px"><div class="cn-lbl">Target</div><div class="cn-val">${esc(item.causal.targetMetric)}</div></div>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);background:#F7F8FF;border-radius:8px;padding:8px 12px;margin-top:8px">${esc(item.causal.gapText)}</div>
+      ${item.causal.weakLinks.map(w=>`<div class="weak-link" style="margin-top:6px">⚠️ <span>${esc(w)}</span></div>`).join('')}
+    </div>
+    ` : ''}
+
+    <div class="modal-section">
+      <div class="modal-section-title">Стратегический анализ</div>
+      ${item.conflictHtml}
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Варианты реализации</div>
+      ${item.alts.map(a=>`<div class="modal-alt"><span class="alt-badge ${a.cls}">${a.label}</span><span style="font-size:.85rem">${esc(a.desc)}</span></div>`).join('')}
+    </div>
+
+    ${item.stratCtx ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Контекст стратегии v${item.stratCtx.version}</div>
+      <div class="modal-text-box">
+        <div class="modal-ctx">
+          <div class="modal-ctx-item"><div class="modal-ctx-lbl">Продукт</div><div class="modal-ctx-val">${item.prodCtx?esc(item.prodCtx.name):'—'}</div></div>
+          <div class="modal-ctx-item"><div class="modal-ctx-lbl">Цель</div><div class="modal-ctx-val">${item.stratCtx.targetMetric} → ${esc(item.stratCtx.targetVal)}</div></div>
+          <div class="modal-ctx-item"><div class="modal-ctx-lbl">Фокус</div><div class="modal-ctx-val">${item.stratCtx.focus}${item.stratCtx.focus2?' + '+item.stratCtx.focus2:''}</div></div>
+          <div class="modal-ctx-item"><div class="modal-ctx-lbl">Anti-focus</div><div class="modal-ctx-val" style="color:#B91C1C">${item.stratCtx.antiFocus.join(', ')||'—'}</div></div>
+          <div class="modal-ctx-item"><div class="modal-ctx-lbl">Ресурс</div><div class="modal-ctx-val">${item.stratCtx.resource}</div></div>
+          <div class="modal-ctx-item"><div class="modal-ctx-lbl">Дедлайн</div><div class="modal-ctx-val">${item.stratCtx.targetDate}</div></div>
+        </div>
+      </div>
+    </div>
+    ` : ''}
+  `;
+
+  document.getElementById('detailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('detailModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('detailModal')) closeModal();
+}
+
+// ══════════════════════════════════════════════════════════
+// DRAG & DROP
+// ══════════════════════════════════════════════════════════
+function onDragStart(e,id) { dragId=id; e.target.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; }
+function onDragEnd(e) { e.target.classList.remove('dragging'); dragId=null; document.querySelectorAll('.rm-drop-zone').forEach(z=>z.classList.remove('drag-over')); }
+function onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e,zone) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  if (!dragId) return;
+  let item=null;
+  ['now','next','later','reject'].forEach(z => { const idx=roadmap[z].findIndex(i=>i.id===dragId); if(idx!==-1){item=roadmap[z].splice(idx,1)[0];} });
+  if (item) {
+    item.zone = zone;
+    roadmap[zone].push(item);
+    const hi = history.find(h=>h.id===item.id);
+    if (hi) hi.zone = zone;
+    renderRoadmap(); renderHistory(); checkAlerts(); updatePAS();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════════════
+function resetAll() {
+  product=null; strategy=null; strategyVersions=[]; stratHyps=[]; currentAnalysis=null;
+  roadmap={now:[],next:[],later:[],reject:[]}; history=[];
+  pasScore=0;
+  document.getElementById('pasVal').textContent='—';
+  document.getElementById('pasBar').style.width='0%';
+  document.getElementById('hypText').value='';
+  document.getElementById('analysisResult').classList.add('hidden');
+  document.getElementById('stratVersions').classList.add('hidden');
+  document.getElementById('snapshotBlock').classList.add('hidden');
+  document.getElementById('stratStep1').classList.remove('hidden');
+  document.getElementById('stratStep2').classList.add('hidden');
+  document.getElementById('stratStep3').classList.add('hidden');
+  setStep(1);
+  renderRoadmap(); renderHistory(); renderStratHyps();
+  showTab('strategy');
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(d) { return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+
+// Init
+renderRoadmap();
+renderStratHyps();
+</script>
+</body>
+</html>
