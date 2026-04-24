@@ -76,7 +76,59 @@ pac/
 - иначе → `reject`
 
 **Причинно-следственные цепочки:**
-`buildCausalChain()` строит логику: инициатива → поведение → промежуточная метрика → целевая метрика. Слабые звенья фиксируются явно.
+`buildCausalChain(text, scores, strat)` строит цепочку и проверяет качество каждого звена:
+
+```
+  ┌─────────────────────────┐
+  │       Инициатива        │  ← action (keyword-matched from text)
+  └─────────────────────────┘
+              │
+              │  scores.anti_focus_penalty < -1 ?
+              │  → weakLink: "Инициатива в зоне anti-focus"
+              ▼
+  ┌─────────────────────────┐
+  │  Изменение поведения    │  ← behaviour (template by action type)
+  └─────────────────────────┘
+              │
+              │  scores.hasMechanism == false ?
+              │  → weakLink: "Не описан механизм влияния"
+              ▼
+  ┌─────────────────────────┐
+  │  Промежуточная метрика  │  ← interMetric  (leading indicator)
+  └─────────────────────────┘
+              │
+              │  scores.hasMetric == false ?
+              │  → weakLink: "Нет измеримой метрики"
+              │
+              │  scores.confidence <= 2 ?
+              │  → weakLink: "Низкий confidence"
+              │
+              │  gapText = focusToTarget[strat.focus][strat.targetMetric]
+              │  (стратегический разрыв — зависит от фокуса, не от текста)
+              ▼
+  ┌─────────────────────────┐
+  │    Целевая метрика      │  ← strat.targetMetric  (lagging indicator)
+  └─────────────────────────┘
+
+  KEYWORD TRIGGERS
+  ────────────────────────────────────────────────────────────
+  hasMechanism  «потому что» | «так как» | «что позволит»
+                «это приведёт» | «за счёт»
+
+  hasMetric     \d+%  |  \d+ пользовател  |  \d+ дней
+                «метрик»  |  «измер»
+
+  anti_focus    ≥2 matching anti-focus keywords → penalty -2
+  _penalty      ≥1 matching anti-focus keywords → penalty -1
+                (weakLink только при penalty < -1)
+
+  confidence    starts 4; +1 hasMechanism; +1 hasMetric;
+  (derived)     −2 isVague; −1 if neither mech nor metric;
+                −1 contradicts stratHyps
+                weakLink fires when final value ≤ 2
+  ────────────────────────────────────────────────────────────
+  Все четыре weakLinks[] аддитивны — могут сработать вместе.
+```
 
 **5 стратегических фокусов (AARRR):**
 Acquisition, Activation, Retention, Monetization, Infrastructure. Вся система ориентирована вокруг них.
