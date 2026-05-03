@@ -297,6 +297,48 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mt20{margin-top:20px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn .35s ease forwards}
+
+/* ECONOMICS TAB */
+.econ-mode-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.econ-mode-lbl{font-size:.82rem;color:var(--muted);font-weight:500}
+.econ-toggle{display:flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
+.econ-toggle button{padding:7px 18px;font-size:.82rem;font-weight:500;border:none;background:#fff;color:var(--muted);cursor:pointer;transition:all .2s}
+.econ-toggle button.active{background:var(--primary);color:#fff}
+.econ-inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
+@media(max-width:600px){.econ-inputs{grid-template-columns:1fr}}
+.econ-results-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+@media(max-width:600px){.econ-results-grid{grid-template-columns:1fr}}
+.econ-metric{background:#F7F8FF;border-radius:12px;padding:14px 16px}
+.econ-metric-name{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.econ-metric-formula{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--accent);margin-bottom:6px}
+.econ-metric-val{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--primary)}
+.econ-metric.pos .econ-metric-val{color:#15803D}
+.econ-metric.neg .econ-metric-val{color:#B91C1C}
+.econ-metric.warn .econ-metric-val{color:#B45309}
+.waterfall-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.wf-row{display:flex;align-items:center;gap:10px}
+.wf-label{width:180px;font-size:.78rem;color:var(--text);flex-shrink:0;line-height:1.3}
+.wf-formula{font-size:.65rem;color:var(--muted)}
+.wf-bar-wrap{flex:1;height:28px;background:#F0F1F7;border-radius:6px;overflow:hidden;position:relative;min-width:60px}
+.wf-bar{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:.72rem;font-weight:600;color:#fff;white-space:nowrap;transition:width .7s ease}
+.wf-bar.bar-pos{background:var(--success)}
+.wf-bar.bar-neg{background:var(--danger)}
+.wf-bar.bar-result-pos{background:var(--primary)}
+.wf-bar.bar-result-neg{background:#EF4444;opacity:.75}
+.wf-val{width:120px;font-size:.82rem;font-weight:600;text-align:right;flex-shrink:0}
+.wf-val.pos{color:#15803D}
+.wf-val.neg{color:#B91C1C}
+.wf-val.neutral{color:var(--primary)}
+.wf-divider{height:1px;background:var(--border);margin:2px 0}
+.breakeven-box{background:linear-gradient(135deg,#F5F3FF,#EFF6FF);border:1.5px solid #C4B5FD;border-radius:12px;padding:16px 20px}
+.breakeven-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#5B21B6;margin-bottom:12px}
+.breakeven-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.breakeven-grid{grid-template-columns:1fr}}
+.be-item{display:flex;flex-direction:column;gap:3px}
+.be-lbl{font-size:.72rem;color:var(--muted)}
+.be-val{font-size:1rem;font-weight:700;color:var(--primary);font-family:'Syne',sans-serif}
+.be-val.ok{color:#15803D}
+.be-val.bad{color:#B91C1C}
 </style>
 </head>
 <body>
@@ -326,6 +368,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="nav-btn" id="navHyp" onclick="showTab('hypothesis')">Гипотеза<div class="nav-dot" id="dotHyp"></div></button>
   <button class="nav-btn" id="navRoadmap" onclick="showTab('roadmap')">Roadmap<div class="nav-dot" id="dotRoadmap"></div></button>
   <button class="nav-btn" id="navOffice" onclick="showTab('office')">AI Office<div class="nav-dot" id="dotOffice"></div></button>
+  <button class="nav-btn" id="navEcon" onclick="showTab('economics')">Экономика</button>
 </div>
 
 <!-- ══════════════════════════════════════════════ -->
@@ -708,6 +751,77 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
 </div>
 
+<!-- ══════════════════════════════════════════════ -->
+<!-- ECONOMICS TAB                                  -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="tab-economics" class="hidden">
+
+  <div class="card fade-in">
+    <div class="section-tag teal">Юнит-экономика</div>
+    <div class="card-title">Калькулятор экономики продукта</div>
+    <div class="card-sub">Введи данные — PAC рассчитает ключевые метрики и покажет структуру прибыли</div>
+
+    <div class="econ-mode-row">
+      <span class="econ-mode-lbl">Режим расчёта:</span>
+      <div class="econ-toggle">
+        <button id="modeAvg" class="active" onclick="setEconMode('avg')">Усреднённый</button>
+        <button id="modeCohort" onclick="setEconMode('cohort')">Когортный</button>
+      </div>
+    </div>
+    <div id="econModeHint" style="font-size:.78rem;color:var(--muted);margin-bottom:18px;">
+      C1 = buyers / users — усредняем по всем пользователям
+    </div>
+
+    <div class="econ-inputs">
+      <div class="field">
+        <label>Users — всего пользователей</label>
+        <input type="number" id="econUsers" placeholder="1000" oninput="calcEcon()" min="0">
+      </div>
+      <div class="field" id="fieldUsersNew" style="display:none">
+        <label>Users new — новые за период</label>
+        <input type="number" id="econUsersNew" placeholder="300" oninput="calcEcon()" min="0">
+      </div>
+      <div class="field">
+        <label>Buyers — покупатели всего</label>
+        <input type="number" id="econBuyers" placeholder="124" oninput="calcEcon()" min="0">
+      </div>
+      <div class="field" id="fieldBuyersNew" style="display:none">
+        <label>Buyers new — новые покупатели за период</label>
+        <input type="number" id="econBuyersNew" placeholder="40" oninput="calcEcon()" min="0">
+      </div>
+      <div class="field">
+        <label>CPUser — стоимость привлечения 1 пользователя, ₽</label>
+        <input type="number" id="econCPUser" placeholder="250" oninput="calcEcon()" min="0">
+      </div>
+      <div class="field">
+        <label>AMPPU — средняя маржа с платящего пользователя, ₽</label>
+        <input type="number" id="econAMPPU" placeholder="1200" oninput="calcEcon()" min="0">
+      </div>
+      <div class="field">
+        <label>Fix Costs — постоянные затраты, ₽</label>
+        <input type="number" id="econFixCosts" placeholder="50000" oninput="calcEcon()" min="0">
+      </div>
+      <div class="field">
+        <label>НДС на привлечение, %</label>
+        <input type="number" id="econVAT" placeholder="20" value="20" oninput="calcEcon()" min="0" max="100">
+      </div>
+    </div>
+  </div>
+
+  <div id="econResults" class="hidden">
+    <div class="card fade-in">
+      <div class="section-tag success">Расчётные метрики</div>
+      <div class="econ-results-grid" id="econMetricsGrid"></div>
+    </div>
+    <div class="card fade-in">
+      <div class="section-tag">Структура прибыли — Waterfall</div>
+      <div class="waterfall-wrap" id="waterfallWrap"></div>
+      <div class="breakeven-box" id="breakevenBox"></div>
+    </div>
+  </div>
+
+</div>
+
 </div><!-- /app -->
 
 <!-- MODAL -->
@@ -740,11 +854,11 @@ window._hypSuggestions = [];
 // NAV
 // ══════════════════════════════════════════════════════════
 function showTab(name) {
-  ['strategy','hypothesis','roadmap','office'].forEach(t =>
+  ['strategy','hypothesis','roadmap','office','economics'].forEach(t =>
     document.getElementById('tab-'+t).classList.add('hidden'));
   document.getElementById('tab-'+name).classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const tabs = ['strategy','hypothesis','roadmap','office'];
+  const tabs = ['strategy','hypothesis','roadmap','office','economics'];
   document.querySelectorAll('.nav-btn')[tabs.indexOf(name)].classList.add('active');
   if (name === 'office') runAIOffice();
 }
@@ -1774,6 +1888,156 @@ function resetAll() {
 // ══════════════════════════════════════════════════════════
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmtDate(d) { return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+
+// ══════════════════════════════════════════════════════════
+// ECONOMICS
+// ══════════════════════════════════════════════════════════
+let econMode = 'avg';
+
+function setEconMode(mode) {
+  econMode = mode;
+  document.getElementById('modeAvg').classList.toggle('active', mode === 'avg');
+  document.getElementById('modeCohort').classList.toggle('active', mode === 'cohort');
+  document.getElementById('fieldUsersNew').style.display = mode === 'cohort' ? '' : 'none';
+  document.getElementById('fieldBuyersNew').style.display = mode === 'cohort' ? '' : 'none';
+  document.getElementById('econModeHint').textContent = mode === 'avg'
+    ? 'C1 = buyers / users — усредняем по всем пользователям'
+    : 'C1 = buyers new / users new — считаем когортами без усреднения';
+  calcEcon();
+}
+
+function fmtRub(n) {
+  if (!isFinite(n) || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  let str;
+  if (abs >= 1e6) str = (n / 1e6).toFixed(1) + ' млн ₽';
+  else if (abs >= 1e3) str = (n / 1e3).toFixed(1) + ' тыс ₽';
+  else str = Math.round(n) + ' ₽';
+  return str;
+}
+
+function fmtPct(n) {
+  if (!isFinite(n) || isNaN(n)) return '—';
+  return (n * 100).toFixed(1) + '%';
+}
+
+function calcEcon() {
+  const users    = parseFloat(document.getElementById('econUsers').value)    || 0;
+  const usersNew = parseFloat(document.getElementById('econUsersNew').value) || 0;
+  const buyers   = parseFloat(document.getElementById('econBuyers').value)   || 0;
+  const buyersNew= parseFloat(document.getElementById('econBuyersNew').value)|| 0;
+  const cpUser   = parseFloat(document.getElementById('econCPUser').value)   || 0;
+  const amppu    = parseFloat(document.getElementById('econAMPPU').value)    || 0;
+  const fixCosts = parseFloat(document.getElementById('econFixCosts').value) || 0;
+  const vat      = parseFloat(document.getElementById('econVAT').value)      || 0;
+
+  const hasData = econMode === 'avg'
+    ? (users > 0 && buyers > 0)
+    : (usersNew > 0 && buyersNew > 0);
+
+  if (!hasData) {
+    document.getElementById('econResults').classList.add('hidden');
+    return;
+  }
+
+  const c1 = econMode === 'avg' ? buyers / users : buyersNew / usersNew;
+
+  // profit = users × (−CPUser + C1 × AMPPU)
+  const ampu       = c1 * amppu;
+  const acqCosts   = users * cpUser;
+  const acqCostsVAT= acqCosts * (1 + vat / 100);
+  const cac        = buyers > 0 ? acqCostsVAT / buyers : 0;
+  const grossProfit= amppu * buyers;            // AMPPU × buyers
+  const profit     = grossProfit - acqCosts;    // Gross Profit − Acq Costs
+  const profitNet  = profit - fixCosts;         // Profit − Fix Costs
+
+  // Break-even C1: profit-per-user = 0 → C1 = CPUser / AMPPU
+  const beC1 = amppu > 0 ? cpUser / amppu : null;
+  // Break-even Users for Profit Net = 0: users = FixCosts / (AMPU − CPUser), only when AMPU > CPUser
+  const marginPerUser = ampu - cpUser;
+  const beUsersNet = marginPerUser > 0 ? fixCosts / marginPerUser : null;
+
+  renderEconResults({ c1, ampu, acqCosts, acqCostsVAT, cac, grossProfit, profit, profitNet,
+                      beC1, beUsersNet, users, buyers, cpUser, amppu, fixCosts });
+}
+
+function renderEconResults({ c1, ampu, acqCosts, acqCostsVAT, cac, grossProfit, profit, profitNet,
+                              beC1, beUsersNet, users, buyers, cpUser, amppu, fixCosts }) {
+  document.getElementById('econResults').classList.remove('hidden');
+
+  const c1Formula = econMode === 'avg' ? 'buyers / users' : 'buyers new / users new';
+
+  const metrics = [
+    { name: 'C1 — конверсия в покупку',          formula: c1Formula,                val: fmtPct(c1),        cls: '' },
+    { name: 'AMPU — маржа на пользователя',        formula: 'C1 × AMPPU',             val: fmtRub(ampu),      cls: ampu >= 0 ? '' : 'neg' },
+    { name: 'Acq Costs — затраты на привлечение',  formula: 'Users × CPUser',          val: fmtRub(acqCosts),  cls: '' },
+    { name: 'CAC — стоимость покупателя',          formula: 'Acq Costs(+НДС) / Buyers',val: fmtRub(cac),       cls: '' },
+    { name: 'Gross Profit — валовая прибыль',      formula: 'AMPPU × Buyers',          val: fmtRub(grossProfit), cls: grossProfit > 0 ? 'pos' : 'neg' },
+    { name: 'Profit — до постоянных затрат',       formula: 'Gross Profit − Acq Costs',val: fmtRub(profit),    cls: profit > 0 ? 'pos' : (profit > -Math.abs(grossProfit) * 0.5 ? 'warn' : 'neg') },
+    { name: 'Profit Net — чистая прибыль',         formula: 'Profit − Fix Costs',      val: fmtRub(profitNet), cls: profitNet > 0 ? 'pos' : (profitNet > -Math.abs(grossProfit) * 0.5 ? 'warn' : 'neg') },
+    { name: 'LTV-proxy (≈ AMPU)',                  formula: 'C1 × CLTV ≈ C1 × AMPPU', val: fmtRub(ampu),      cls: ampu > cpUser ? 'pos' : 'neg' },
+  ];
+
+  document.getElementById('econMetricsGrid').innerHTML = metrics.map(m => `
+    <div class="econ-metric ${esc(m.cls)}">
+      <div class="econ-metric-name">${esc(m.name)}</div>
+      <div class="econ-metric-formula">${esc(m.formula)}</div>
+      <div class="econ-metric-val">${esc(m.val)}</div>
+    </div>
+  `).join('');
+
+  // Waterfall
+  const maxAbs = Math.max(Math.abs(grossProfit), Math.abs(acqCosts), Math.abs(fixCosts), 1);
+
+  function wfRow(label, formula, value, type) {
+    const pct = Math.min(Math.abs(value) / maxAbs * 100, 100).toFixed(1);
+    const isPos = value >= 0;
+    const barCls = type === 'result' ? (isPos ? 'bar-result-pos' : 'bar-result-neg') : (isPos ? 'bar-pos' : 'bar-neg');
+    const valCls = type === 'result' ? 'neutral' : (isPos ? 'pos' : 'neg');
+    const inner = pct > 22 ? esc(fmtRub(Math.abs(value))) : '';
+    return `
+      <div class="wf-row">
+        <div class="wf-label">${esc(label)}<br><span class="wf-formula">${esc(formula)}</span></div>
+        <div class="wf-bar-wrap"><div class="wf-bar ${barCls}" style="width:${pct}%">${inner}</div></div>
+        <div class="wf-val ${valCls}">${isPos ? '+' : '−'} ${fmtRub(Math.abs(value))}</div>
+      </div>`;
+  }
+
+  document.getElementById('waterfallWrap').innerHTML =
+    wfRow('Gross Profit', 'AMPPU × Buyers', grossProfit, 'income') +
+    wfRow('− Acq Costs',  'Users × CPUser', -acqCosts,   'cost') +
+    '<div class="wf-divider"></div>' +
+    wfRow('= Profit',     'Gross − Acq Costs', profit,   'result') +
+    wfRow('− Fix Costs',  'постоянные затраты', -fixCosts,'cost') +
+    '<div class="wf-divider"></div>' +
+    wfRow('= Profit Net', 'Profit − Fix Costs', profitNet,'result');
+
+  // Break-even
+  const beC1Pct = beC1 !== null ? fmtPct(beC1) : '—';
+  const beC1Ok  = beC1 !== null && c1 >= beC1;
+  const beUsersStr = beUsersNet !== null
+    ? Math.ceil(beUsersNet).toLocaleString('ru-RU') + ' users'
+    : (ampu <= cpUser ? 'AMPU ≤ CPUser' : '—');
+  const beUsersOk = beUsersNet !== null && users >= beUsersNet;
+
+  document.getElementById('breakevenBox').innerHTML = `
+    <div class="breakeven-title">Точка безубыточности</div>
+    <div class="breakeven-grid">
+      <div class="be-item">
+        <div class="be-lbl">Нужная C1 = CPUser / AMPPU</div>
+        <div class="be-val ${beC1 !== null ? (beC1Ok ? 'ok' : 'bad') : ''}">
+          ${esc(beC1Pct)} ${beC1 !== null ? (beC1Ok ? '✓ достигнута' : '(сейчас ' + fmtPct(c1) + ')') : ''}
+        </div>
+      </div>
+      <div class="be-item">
+        <div class="be-lbl">Нужно Users для Profit Net = 0</div>
+        <div class="be-val ${beUsersNet !== null ? (beUsersOk ? 'ok' : 'bad') : ''}">
+          ${esc(beUsersStr)} ${beUsersNet !== null ? (beUsersOk ? '✓ достигнуто' : '(сейчас ' + Math.round(users).toLocaleString('ru-RU') + ')') : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
 
 // Init
 renderRoadmap();
