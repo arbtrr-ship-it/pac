@@ -7,9 +7,9 @@ AI-ассистент для продуктовых менеджеров: пом
 
 ## Tech Stack
 
-- **Vanilla JavaScript (ES6+)** — без фреймворков, без npm, без build-step
-- **Vanilla CSS** — CSS Custom Properties, Grid, Flexbox
-- **HTML5** — единый файл-приложение
+- **Vanilla JavaScript (ES6+)** — без фреймворков, без npm, без build-step; разбито на 12 модулей в `js/`
+- **Vanilla CSS** — CSS Custom Properties, Grid, Flexbox; вынесен в `styles.css`
+- **HTML5** — `index.html` содержит только разметку; JS и CSS — в отдельных файлах
 - **Netlify** — хостинг статики, SPA-редиректы через `_redirects`
 - **Google Fonts** — Syne, DM Sans, DM Mono (подключены через CDN)
 
@@ -19,14 +19,28 @@ AI-ассистент для продуктовых менеджеров: пом
 
 ```
 pac/
-├── index.html      # Всё приложение: HTML + CSS (~300 строк) + JS (~1100 строк)
-├── pac.html        # Идентичная копия index.html (дублирует)
-├── _redirects      # Netlify SPA-редирект: /* /index.html 200
-├── README.md       # Минимальный README (только заголовок)
-└── CLAUDE.md       # Этот файл
+├── index.html          # HTML-каркас (~445 строк): разметка + <link>/<script> теги
+├── styles.css          # Весь CSS (~291 строка)
+├── js/
+│   ├── state.js        # Глобальные переменные (product, strategy, roadmap, history…)
+│   ├── utils.js        # esc(s), fmtDate(d)
+│   ├── scoring.js      # scoreHypothesis, buildCausalChain, generateConflict, generateAlts
+│   ├── suggestions.js  # generateSuggestions, selectChip, checkAIBanner
+│   ├── strategy.js     # Stepper (setStep/toStep1-3), saveStrategy, renderContextStrip, renderVersions
+│   ├── pas.js          # updatePAS, checkAlerts, renderSnapshot
+│   ├── roadmap.js      # addToRoadmap, renderRoadmap, renderHistory, drag&drop
+│   ├── analysis.js     # analyzeHyp, renderAnalysis, switchLayer
+│   ├── office.js       # runAIOffice
+│   ├── modal.js        # openModal, closeModal, closeModalOutside
+│   ├── nav.js          # showTab
+│   └── app.js          # resetAll + init (последний загружается)
+├── pac.html            # Meta-refresh редирект на index.html (9 строк)
+├── _redirects          # Netlify SPA-редирект: /* /index.html 200
+├── README.md           # Минимальный README (только заголовок)
+└── CLAUDE.md           # Этот файл
 ```
 
-Вся логика сосредоточена в `index.html`. Секции JS разделены комментариями с `═` (визуальные разделители).
+Порядок загрузки скриптов в `index.html` важен: `state.js` и `utils.js` — первыми, `app.js` — последним (содержит init-вызовы). Все JS-файлы используют глобальную область видимости, `<script>` теги без `type="module"`.
 
 ---
 
@@ -62,8 +76,8 @@ pac/
 
 ## What Claude Should Know
 
-**Архитектура — один HTML-файл:**
-Всё приложение живёт в `index.html`. Нет модулей, нет импортов, нет сборки. Изменения вносятся напрямую в этот файл.
+**Архитектура — многофайловая, без сборки:**
+Приложение разбито на `index.html` (разметка) + `styles.css` (стили) + 12 JS-файлов в `js/`. Нет ES-модулей, нет импортов, нет сборки — все скрипты подключены через обычные `<script src="...">` теги и работают в общей глобальной области видимости. Изменения вносятся в соответствующий файл по назначению (см. Project Structure).
 
 **Состояние — in-memory, без персистентности:**
 Данные хранятся в глобальных переменных (`product`, `strategy`, `roadmap`, `history` и др.). При перезагрузке страницы всё сбрасывается — это намеренно (MVP/demo).
@@ -87,11 +101,19 @@ Acquisition, Activation, Retention, Monetization, Infrastructure. Вся сис�
 **AI-фичи — rule-based, не ML:**
 `generateSuggestions()`, `runAIOffice()`, `buildCausalChain()` — шаблонная генерация по ключевым словам и категориям продукта. Никакого внешнего AI API нет.
 
-**`pac.html` — дубликат:**
-Файл идентичен `index.html`. Любые изменения нужно вносить в оба файла (или договориться об удалении дублирования).
+**`pac.html` — редирект:**
+Файл содержит только `<meta http-equiv="refresh" content="0; url=index.html">`. Синхронизировать с `index.html` не нужно — изменения вносятся только в соответствующие файлы (`index.html`, `styles.css`, `js/*.js`).
 
 **Навигация по коду:**
-JS-секции в `index.html` разделены комментариями вида `// ════...`. Все функции расположены в строках ~724–1781. Быстрый поиск — по имени функции: `scoreHypothesis`, `renderRoadmap`, `runAIOffice`, `buildCausalChain`, `updatePAS`.
+Каждый JS-файл отвечает за одну зону. Быстрый поиск функции — по названию файла:
+- Скоринг и цепочки → `js/scoring.js`
+- Анализ гипотез (UI) → `js/analysis.js`
+- Роадмап и история → `js/roadmap.js`
+- Стратегия и шаги → `js/strategy.js`
+- PAS, алерты, снэпшот → `js/pas.js`
+- AI Office → `js/office.js`
+- Модалка → `js/modal.js`
+- Глобальные переменные → `js/state.js`
 
 **Глобальные функции vs стрелочные:**
 Все обработчики кнопок объявлены через `function fn()` — только так они попадают в `window` и доступны из `onclick="fn()"` в HTML. Стрелочные функции `const fn = () =>` в глобальной области в `window` не попадают — использовать только для вспомогательной логики внутри других функций.
@@ -310,7 +332,7 @@ Cardinality:
 
 2. **Не вставляй user input в DOM без `esc(s)`** — это единственная защита от XSS в клиентском приложении. Касается не только форм, но и `renderHistory()`, `renderRoadmap()`, модалки и снэпшота — текст гипотезы попадает везде.
 
-3. **Не разбивай `index.html` на отдельные модули/файлы** без явного запроса — текущая структура намеренно монолитная (single-file app).
+3. **Не объединяй JS-файлы обратно в `index.html`** — приложение намеренно разбито на модули в `js/`. Не переносить логику обратно в HTML-файл без явного запроса.
 
 4. **Не добавляй localStorage/sessionStorage-персистентность** по умолчанию — потеря состояния при рефреше является ожидаемым поведением в текущей итерации.
 
@@ -322,4 +344,4 @@ Cardinality:
 
 8. **Не добавляй реальные async-операции (`await fetch`) в функции, вызываемые из `onclick`** — текущий "анализ" намеренно имитирует задержку через `setTimeout`. Смешение с настоящим async нарушит порядок обновления UI и управление spinner-ом.
 
-9. **Не удаляй `pac.html` без явного подтверждения** — файл может быть нужен как отдельный URL или резервная копия. При любых изменениях `index.html` синхронизируй оба файла.
+9. **Не трогай `pac.html`** — файл содержит только редирект на `index.html`. Синхронизировать с `index.html` не нужно. Не удалять без явного подтверждения — URL `/pac.html` может быть активен.
