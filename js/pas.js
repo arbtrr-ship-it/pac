@@ -9,8 +9,7 @@ function updatePAS() {
 
   // Criteria
   const distribution = (() => {
-    const zones = ['now','next','later','reject'];
-    const counts = zones.map(z => roadmap[z].length);
+    const counts = ZONES.map(z => roadmap[z].length);
     const mx = Math.max(...counts);
     const sum = counts.reduce((a,b)=>a+b,0);
     if (sum === 0) return 50;
@@ -58,10 +57,9 @@ function checkAlerts() {
   const msgs = [];
   if (roadmap.now.length > 3) msgs.push(`Фокус перегружен: в колонке "Now" ${roadmap.now.length} задачи (норма ≤ 3).`);
   if (total >= 3) {
-    ['now','next','later','reject'].forEach(z => {
+    ZONES.forEach(z => {
       if (roadmap[z].length/total >= 0.7) {
-        const lbl = {now:'Now',next:'Next',later:'Later',reject:'Reject'};
-        msgs.push(`70%+ задач в "${lbl[z]}" — возможен стратегический перекос.`);
+        msgs.push(`70%+ задач в "${ZONE_LABEL[z]}" — возможен стратегический перекос.`);
       }
     });
   }
@@ -78,10 +76,9 @@ function renderSnapshot() {
   const nowCount = roadmap.now.length;
   const warnings = [];
   if (nowCount > 3) warnings.push(`Колонка "Now" перегружена (${nowCount} задачи).`);
-  const pcts = ['now','next','later','reject'].map(z => {
+  const pcts = ZONES.map(z => {
     const p = Math.round((roadmap[z].length/total)*100);
-    const lbl = {now:'Now',next:'Next',later:'Later',reject:'Reject'};
-    return `<span style="opacity:.8">${lbl[z]}</span>: <strong>${p}%</strong>`;
+    return `<span style="opacity:.8">${ZONE_LABEL[z]}</span>: <strong>${p}%</strong>`;
   }).join(' · ');
   snap.classList.remove('hidden');
   snap.innerHTML = `

@@ -48,10 +48,9 @@ function renderAnalysis(analysis) {
   db.className = 'depth-badge ' + depthMap[scores.depth][1];
 
   // Verdict
-  const vmap = { now:['Now','verdict-now'], next:['Next','verdict-next'], later:['Later','verdict-later'], reject:['Reject','verdict-reject'] };
   const vb = document.getElementById('verdictBadge');
-  vb.textContent = vmap[scores.verdict][0];
-  vb.className = 'verdict-badge ' + vmap[scores.verdict][1];
+  vb.textContent = ZONE_LABEL[scores.verdict];
+  vb.className = 'verdict-badge ' + ZONE_CLASS[scores.verdict];
 
   // Scores
   const scoreItems = [
