@@ -1,4 +1,53 @@
 // ══════════════════════════════════════════════════════════
+// EXPORT ROADMAP
+// ══════════════════════════════════════════════════════════
+function exportRoadmap() {
+  const total = ['now','next','later','reject'].reduce((s,z) => s + roadmap[z].length, 0);
+  if (!total) { showExportToast('Роадмап пуст — нечего экспортировать', true); return; }
+
+  const zoneTitles = { now:'Now', next:'Next', later:'Later', reject:'Reject' };
+  const header = product ? `# Roadmap — ${product.name}\n_Экспорт: ${fmtDate(Date.now())}_\n\n` : `# Roadmap\n_Экспорт: ${fmtDate(Date.now())}_\n\n`;
+  const sep = '|---|---|---|---|---|---|---|';
+  const tableHead = '| Зона | Инициатива | Fit | Impact | Cmpx | Conf | Дата |';
+
+  const rows = ['now','next','later','reject'].flatMap(z =>
+    roadmap[z].map(item => {
+      const s = item.scores;
+      const text = item.text.replace(/\|/g, '\\|').substring(0, 80) + (item.text.length > 80 ? '…' : '');
+      return `| ${zoneTitles[z]} | ${text} | ${s.fit}/5 | ${s.impact}/5 | ${s.complexity}/5 | ${s.confidence}/5 | ${fmtDate(item.ts)} |`;
+    })
+  );
+
+  const md = header + tableHead + '\n' + sep + '\n' + rows.join('\n');
+
+  navigator.clipboard.writeText(md).then(
+    () => showExportToast('Скопировано в буфер — вставляй в Notion, GitHub, Confluence'),
+    () => {
+      // fallback for non-secure contexts
+      const ta = document.createElement('textarea');
+      ta.value = md; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      showExportToast('Скопировано в буфер — вставляй в Notion, GitHub, Confluence');
+    }
+  );
+}
+
+function showExportToast(msg, isError) {
+  let toast = document.getElementById('exportToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'exportToast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.className = 'export-toast' + (isError ? ' export-toast-error' : '');
+  toast.classList.add('export-toast-show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('export-toast-show'), 2800);
+}
+
+// ══════════════════════════════════════════════════════════
 // ADD TO ROADMAP
 // ══════════════════════════════════════════════════════════
 function addToRoadmap(analysisObj, fromAI) {
