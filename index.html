@@ -329,10 +329,17 @@
         <div class="section-tag">Варианты реализации</div>
         <div class="alts" id="altsBlock"></div>
 
-        <button class="btn btn-primary btn-full mt8" onclick="addToRoadmap()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-          Добавить в Roadmap
-        </button>
+        <div class="whats-next">
+          <div class="whats-next-title">Что дальше?</div>
+          <div class="whats-next-actions">
+            <button class="btn btn-primary" onclick="addToRoadmap()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+              Добавить в Roadmap
+            </button>
+            <button class="btn btn-ghost" onclick="skipAnalysis()">Пропустить</button>
+            <button class="btn btn-ghost" onclick="analyzeAnother()">Ещё одна гипотеза</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

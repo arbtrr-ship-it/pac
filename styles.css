@@ -280,6 +280,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* STRATEGY VERSION BADGE */
 .version-badge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;padding:2px 9px;border-radius:6px;background:#EDEDFE;color:var(--accent)}
 
+/* WHAT'S NEXT */
+.whats-next{margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.whats-next-title{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px}
+.whats-next-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.whats-next-actions .btn{flex:0 1 auto}
+.whats-next-actions .btn-primary{flex:1 1 auto}
+
 /* MISC */
 .divider{height:1px;background:var(--border);margin:20px 0}
 .mono{font-family:'DM Mono',monospace;font-size:.82rem}
