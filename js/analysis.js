@@ -156,3 +156,16 @@ function switchLayer(name, btn) {
   btn.classList.add('active');
   document.getElementById('layer-'+name).classList.add('active');
 }
+
+function skipAnalysis() {
+  document.getElementById('analysisWrap').classList.remove('visible');
+  document.getElementById('analysisResult').classList.add('hidden');
+  currentAnalysis = null;
+}
+
+function analyzeAnother() {
+  skipAnalysis();
+  document.getElementById('hypText').value = '';
+  document.querySelectorAll('.hyp-chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('hypText').focus();
+}
