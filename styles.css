@@ -30,6 +30,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .nav-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .nav-dot{position:absolute;top:-3px;right:-3px;width:8px;height:8px;background:var(--danger);border-radius:50%;border:2px solid var(--bg);display:none}
 .nav-dot.show{display:block}
+.nav-kbd{margin-left:6px;font-family:'DM Mono',monospace;font-size:.65rem;font-weight:500;opacity:.45;letter-spacing:0}
+.nav-btn.active .nav-kbd{opacity:.65}
 
 /* STEPPER */
 .stepper{display:flex;align-items:center;margin-bottom:24px}
