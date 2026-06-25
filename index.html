@@ -329,10 +329,17 @@
         <div class="section-tag">Варианты реализации</div>
         <div class="alts" id="altsBlock"></div>
 
-        <button class="btn btn-primary btn-full mt8" onclick="addToRoadmap()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-          Добавить в Roadmap
-        </button>
+        <div class="whats-next">
+          <div class="whats-next-title">Что дальше?</div>
+          <div class="whats-next-actions">
+            <button class="btn btn-primary" onclick="addToRoadmap()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+              Добавить в Roadmap
+            </button>
+            <button class="btn btn-ghost" onclick="skipAnalysis()">Пропустить</button>
+            <button class="btn btn-ghost" onclick="analyzeAnother()">Ещё одна гипотеза</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -347,7 +354,10 @@
 
   <div class="card fade-in">
     <div class="section-tag">Roadmap</div>
-    <div class="card-title">Стратегический Roadmap</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:0">Стратегический Roadmap</div>
+      <button class="btn btn-ghost btn-sm" onclick="exportRoadmap()" title="Скопировать роадмап как Markdown-таблицу">⬆ Экспорт MD</button>
+    </div>
     <div class="roadmap-board">
       <div class="rm-col now">
         <div class="rm-col-head"><span class="rm-col-title">Now</span><span class="rm-cnt" id="cnt-now">0</span></div>
