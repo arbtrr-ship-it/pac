@@ -1,0 +1,37 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.netlify.outputs.deploy-url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Netlify
+        id: netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          set +x
+          npx --yes netlify-cli@latest deploy \
+            --dir=. \
+            --prod \
+            --message="GitHub Actions: ${GITHUB_SHA}" \
+            --json > deploy.json
+          deploy_url=$(node -e "console.log(require('./deploy.json').deploy_url || require('./deploy.json').url || '')")
+          echo "deploy-url=$deploy_url" >> "$GITHUB_OUTPUT"
+          echo "Deployed to: $deploy_url"
+          rm -f deploy.json
