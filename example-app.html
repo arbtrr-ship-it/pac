@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пример приложения · Design System PAC</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* Только layout-утилиты для демо-макета. Все визуальные стили (цвет,
+   радиус, тень, типографика) — исходные классы из styles.css. */
+.app.ea{max-width:920px}
+.ea-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.ea-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+@media(max-width:600px){.ea-stats{grid-template-columns:1fr}}
+.ea-tasks{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:680px){.ea-tasks{grid-template-columns:1fr}}
+.ea-badges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.ea-actions{display:flex;gap:8px;margin-top:10px}
+.ea-comment-meta{font-size:.7rem;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="app ea">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  </div>
+  <div class="header-text">
+    <h1>Трекер задач</h1>
+    <p>Пример-приложение — живая площадка для дизайн-системы PAC</p>
+  </div>
+  <a href="design-system.html" style="margin-left:auto"><button class="btn btn-ghost btn-sm">Design System →</button></a>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" id="nav-dashboard" onclick="switchScreen('dashboard')">Дашборд</button>
+  <button class="nav-btn" id="nav-new" onclick="switchScreen('new')">Новая задача</button>
+  <button class="nav-btn" id="nav-detail" onclick="switchScreen('detail')">Детали задачи</button>
+  <button class="nav-btn" id="nav-settings" onclick="switchScreen('settings')">Настройки</button>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SCREEN 1: DASHBOARD                            -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="layer-panel active" id="screen-dashboard">
+  <div class="ea-row">
+    <div>
+      <div class="card-title" style="margin-bottom:2px">Мои задачи</div>
+      <div class="card-sub" style="margin-bottom:0">Обзор по проекту «Онбординг 2.0»</div>
+    </div>
+    <button class="btn btn-primary" onclick="switchScreen('new')">+ Новая задача</button>
+  </div>
+
+  <div class="ea-stats">
+    <div class="score-item">
+      <div class="score-name">Всего задач</div>
+      <div class="score-val">18</div>
+    </div>
+    <div class="score-item">
+      <div class="score-name">В работе</div>
+      <div class="score-val" style="color:var(--blue)">6</div>
+    </div>
+    <div class="score-item">
+      <div class="score-name">Готово</div>
+      <div class="score-val" style="color:var(--success)">9</div>
+    </div>
+  </div>
+
+  <div class="ea-tasks">
+    <div class="rm-card" style="cursor:pointer" onclick="switchScreen('detail')">
+      <div class="rm-card-title">Обновить онбординг-флоу</div>
+      <div class="rm-card-meta">Дедлайн: 12 июля · Аня К.</div>
+      <div class="ea-badges">
+        <span class="verdict-badge verdict-now">В работе</span>
+        <span class="risk-badge risk-high">Высокий</span>
+      </div>
+    </div>
+    <div class="rm-card" style="cursor:pointer" onclick="switchScreen('detail')">
+      <div class="rm-card-title">Добавить экспорт в CSV</div>
+      <div class="rm-card-meta">Дедлайн: 18 июля · Игорь С.</div>
+      <div class="ea-badges">
+        <span class="verdict-badge verdict-next">Далее</span>
+        <span class="risk-badge risk-medium">Средний</span>
+      </div>
+    </div>
+    <div class="rm-card" style="cursor:pointer" onclick="switchScreen('detail')">
+      <div class="rm-card-title">Провести ревью дизайн-системы</div>
+      <div class="rm-card-meta">Дедлайн: 20 июля · Тимур П.</div>
+      <div class="ea-badges">
+        <span class="verdict-badge verdict-now">В работе</span>
+        <span class="risk-badge risk-low">Низкий</span>
+      </div>
+    </div>
+    <div class="rm-card" style="cursor:pointer" onclick="switchScreen('detail')">
+      <div class="rm-card-title">Написать тесты для формы оплаты</div>
+      <div class="rm-card-meta">Дедлайн: 2 августа · Игорь С.</div>
+      <div class="ea-badges">
+        <span class="verdict-badge verdict-later">Бэклог</span>
+        <span class="risk-badge risk-medium">Средний</span>
+      </div>
+    </div>
+    <div class="rm-card" style="cursor:pointer" onclick="switchScreen('detail')">
+      <div class="rm-card-title">Мигрировать логи на новый сервис</div>
+      <div class="rm-card-meta">Дедлайн: — · Тимур П.</div>
+      <div class="ea-badges">
+        <span class="verdict-badge verdict-reject">Отменено</span>
+        <span class="risk-badge risk-low">Низкий</span>
+      </div>
+    </div>
+    <div class="rm-card" style="cursor:pointer" onclick="switchScreen('detail')">
+      <div class="rm-card-title">Синхронизировать словарь ошибок</div>
+      <div class="rm-card-meta">Дедлайн: 25 июля · Аня К.</div>
+      <div class="ea-badges">
+        <span class="verdict-badge verdict-next">Далее</span>
+        <span class="risk-badge risk-high">Высокий</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SCREEN 2: NEW TASK (FORM)                      -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="layer-panel" id="screen-new">
+  <div class="card">
+    <div class="section-tag">Новая задача</div>
+    <div class="card-title">Создать задачу</div>
+    <div class="card-sub">Заполни детали — задача попадёт в дашборд</div>
+
+    <div class="form-grid">
+      <div class="field field-full">
+        <label>Название</label>
+        <input type="text" placeholder="Например: Обновить онбординг-флоу">
+      </div>
+      <div class="field">
+        <label>Категория</label>
+        <select>
+          <option>Продукт</option>
+          <option>Инжиниринг</option>
+          <option>Дизайн</option>
+          <option>Маркетинг</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Дедлайн</label>
+        <input type="date">
+      </div>
+      <div class="field">
+        <label>Исполнитель</label>
+        <input type="text" placeholder="Имя">
+      </div>
+      <div class="field">
+        <label>Приоритет</label>
+        <div class="hyp-chips">
+          <div class="hyp-chip">Низкий</div>
+          <div class="hyp-chip selected">Средний</div>
+          <div class="hyp-chip">Высокий</div>
+        </div>
+      </div>
+      <div class="field field-full">
+        <label>Описание</label>
+        <textarea placeholder="Что нужно сделать и зачем"></textarea>
+      </div>
+      <div class="field field-full">
+        <label>Теги</label>
+        <div class="hyp-tags">
+          <div class="hyp-tag">онбординг <button>×</button></div>
+          <div class="hyp-tag">Q3 <button>×</button></div>
+        </div>
+        <div class="add-hyp-row">
+          <input type="text" placeholder="Добавить тег">
+          <button>+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="switchScreen('dashboard')">Отмена</button>
+      <button class="btn btn-primary" onclick="switchScreen('dashboard')">Сохранить задачу</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SCREEN 3: TASK DETAIL                          -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="layer-panel" id="screen-detail">
+  <div class="card">
+    <div class="verdict-row">
+      <span class="verdict-lbl">Статус:</span>
+      <span class="verdict-badge verdict-now">В работе</span>
+      <span class="risk-badge risk-high">Высокий приоритет</span>
+    </div>
+    <div class="card-title">Обновить онбординг-флоу</div>
+    <div class="card-sub">Продукт · Дедлайн 12 июля · Аня К.</div>
+
+    <div class="modal-text-box">
+      Нужно сократить онбординг с 6 шагов до 3, убрав необязательные поля профиля на старте. Это должно поднять completion rate первого запуска.
+    </div>
+
+    <div class="divider"></div>
+    <div class="modal-ctx">
+      <div class="modal-ctx-item"><div class="modal-ctx-lbl">Автор</div><div class="modal-ctx-val">Тимур П.</div></div>
+      <div class="modal-ctx-item"><div class="modal-ctx-lbl">Категория</div><div class="modal-ctx-val">Продукт</div></div>
+      <div class="modal-ctx-item"><div class="modal-ctx-lbl">Создана</div><div class="modal-ctx-val">3 июля</div></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary">Отметить готовой</button>
+      <button class="btn btn-ghost" onclick="switchScreen('new')">Изменить</button>
+      <button class="btn btn-danger">Удалить</button>
+    </div>
+
+    <div class="divider"></div>
+    <div class="card-sub" style="margin-bottom:10px">Комментарии</div>
+    <div class="history-list">
+      <div class="history-item" style="cursor:default">
+        <div class="history-dot dot-now"></div>
+        <div>
+          <div>Аня К.: Начала с экрана приветствия, уберу поле «компания» из шага 1.</div>
+          <div class="ea-comment-meta">Сегодня, 10:24</div>
+        </div>
+      </div>
+      <div class="history-item" style="cursor:default">
+        <div class="history-dot dot-next"></div>
+        <div>
+          <div>Тимур П.: Плюс подсветить прогресс-бар — сейчас его почти не видно.</div>
+          <div class="ea-comment-meta">Вчера, 18:02</div>
+        </div>
+      </div>
+    </div>
+    <div class="add-hyp-row mt16">
+      <input type="text" placeholder="Добавить комментарий">
+      <button>Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- SCREEN 4: SETTINGS                             -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="layer-panel" id="screen-settings">
+  <div class="card">
+    <div class="section-tag">Настройки</div>
+    <div class="card-title">Профиль</div>
+    <div class="card-sub">Личные данные и уведомления</div>
+
+    <div class="form-grid">
+      <div class="field"><label>Имя</label><input type="text" value="Аня Ковалёва"></div>
+      <div class="field"><label>Email</label><input type="text" value="anya@example.com"></div>
+      <div class="field">
+        <label>Часовой пояс</label>
+        <select><option>UTC+3 Москва</option><option>UTC+0 Лондон</option><option>UTC-5 Нью-Йорк</option></select>
+      </div>
+      <div class="field"><label>Роль</label><input type="text" value="Продакт-менеджер"></div>
+      <div class="field field-full"><label>О себе</label><textarea placeholder="Пара слов о себе"></textarea></div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="card-sub" style="margin-bottom:10px">Уведомления</div>
+    <div class="hyp-chips" style="margin-bottom:20px">
+      <div class="hyp-chip selected">Email по новым задачам</div>
+      <div class="hyp-chip selected">Еженедельный дайджест</div>
+      <div class="hyp-chip">Push-уведомления</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary">Сохранить изменения</button>
+      <button class="btn btn-ghost">Отмена</button>
+    </div>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--danger)">
+    <div class="section-tag danger">Опасная зона</div>
+    <div class="card-title" style="font-size:1rem">Удалить аккаунт</div>
+    <div class="card-sub">Все задачи и комментарии будут удалены без возможности восстановления</div>
+    <button class="btn btn-danger btn-sm">Удалить аккаунт</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+function switchScreen(id){
+  document.querySelectorAll('.layer-panel').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('nav-' + id).classList.add('active');
+}
+</script>
+</body>
+</html>
