@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System · Product Architecture Copilot</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* Стили только для витрины — макет секций, сетки, подписи.
+   Все показанные компоненты используют классы из styles.css без изменений. */
+.app.ds{max-width:1120px}
+.ds-jump{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap}
+.ds-jump a{text-decoration:none}
+.ds-section{scroll-margin-top:56px}
+.ds-section h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--primary);margin-bottom:4px}
+.ds-section .ds-desc{font-size:.85rem;color:var(--muted);margin-bottom:18px}
+.ds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.ds-swatch{border-radius:10px;height:64px;border:1.5px solid var(--border)}
+.ds-swatch-meta{margin-top:8px}
+.ds-swatch-name{font-size:.8rem;font-weight:600;color:var(--text)}
+.ds-swatch-hex{font-size:.72rem;color:var(--muted)}
+.ds-swatch-note{font-size:.7rem;color:var(--muted);margin-top:2px;line-height:1.4}
+.ds-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ds-row + .ds-row{margin-top:10px}
+.ds-specimen{padding:14px 0;border-bottom:1px dashed var(--border)}
+.ds-specimen:last-child{border-bottom:none}
+.ds-meta{font-size:.72rem;color:var(--muted);margin-top:6px}
+.ds-meta code{font-family:'DM Mono',monospace;background:#F7F8FF;padding:1px 6px;border-radius:4px}
+.ds-audit-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.ds-audit-item:last-child{border-bottom:none}
+.ds-audit-num{font-family:'Syne',sans-serif;font-weight:800;color:var(--accent);font-size:.95rem;flex-shrink:0;width:22px}
+.ds-audit-title{font-weight:600;font-size:.88rem;color:var(--text);margin-bottom:4px}
+.ds-audit-body{font-size:.82rem;color:var(--muted);line-height:1.55}
+.ds-audit-body b{color:var(--text);font-weight:600}
+.ds-fix{font-size:.82rem;margin-top:8px;padding:8px 12px;border-radius:8px;background:#F0FDF4;color:#166534;border:1px solid #BBF7D0}
+.ds-radius-box{background:#F7F8FF;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;width:80px;height:80px;font-family:'DM Mono',monospace;font-size:.78rem;color:var(--muted)}
+.ds-shadow-box{background:#fff;width:100%;height:80px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.78rem;color:var(--muted);font-family:'DM Mono',monospace}
+.ds-space-bar{background:var(--accent);height:14px;border-radius:3px}
+.ds-space-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.ds-space-label{width:110px;font-family:'DM Mono',monospace;font-size:.75rem;color:var(--muted);flex-shrink:0}
+.ds-mini-board{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style>
+</head>
+<body>
+<div class="app ds">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  </div>
+  <div class="header-text">
+    <h1>Design System</h1>
+    <p>Живая витрина текущего стиля PAC — значения взяты напрямую из styles.css</p>
+  </div>
+</div>
+
+<div class="ds-jump">
+  <a href="#audit"><button class="nav-btn">Расхождения</button></a>
+  <a href="#colors"><button class="nav-btn">Цвета</button></a>
+  <a href="#type"><button class="nav-btn">Типографика</button></a>
+  <a href="#buttons"><button class="nav-btn">Кнопки</button></a>
+  <a href="#cards"><button class="nav-btn">Карточки</button></a>
+  <a href="#forms"><button class="nav-btn">Поля форм</button></a>
+  <a href="#space"><button class="nav-btn">Отступы и радиусы</button></a>
+  <a href="#shadows"><button class="nav-btn">Тени</button></a>
+</div>
+
+<!-- ═══════════════════ AUDIT ═══════════════════ -->
+<div class="card ds-section" id="audit">
+  <div class="section-tag warn">Аудит</div>
+  <div class="card-title">Где стиль разошёлся</div>
+  <div class="card-sub">7 мест, где в коде используется несколько близких вариантов одного и того же — с предложением, что взять за эталон</div>
+
+  <div class="ds-audit-item">
+    <div class="ds-audit-num">01</div>
+    <div>
+      <div class="ds-audit-title">Синий/инфо-акцент раздроблен на 4 значения</div>
+      <div class="ds-audit-body">
+        <b>--accent #6B6EF9</b> — основной интерактивный акцент (focus-ring, hover, теги, кнопка «принять»). <b>--blue #3B82F6</b> объявлена в <code class="mono">:root</code>, но реально используется только один раз (<code class="mono">.dot-next</code>). Плюс два хардкода вне переменных: <b>#1D4ED8</b> (текст <code class="mono">.verdict-next</code>/<code class="mono">.badge-user</code>) и <b>#0369A1</b> (текст <code class="mono">.alt-lean</code>/<code class="mono">.depth-quick</code>). Итого 4 разных «синих» для родственных ролей «интерактив / статус next / инфо».
+      </div>
+      <div class="ds-fix">Эталон: <b>--accent (#6B6EF9)</b> — для всего интерактивного (hover, focus, кнопки). #1D4ED8 и #0369A1 оставить как есть только внутри статус-бейджей (next/info), не путать с акцентом. --blue как отдельную переменную можно убрать и заменить на прямое использование в .dot-next.</div>
+    </div>
+  </div>
+
+  <div class="ds-audit-item">
+    <div class="ds-audit-num">02</div>
+    <div>
+      <div class="ds-audit-title">--purple и --teal объявлены, но нигде не используются</div>
+      <div class="ds-audit-body">
+        В <code class="mono">:root</code> есть <b>--purple: #8B5CF6</b> и <b>--teal: #14B8A6</b> — ни разу не встречаются в styles.css как <code class="mono">var(--purple)</code> / <code class="mono">var(--teal)</code>. Реальный фиолетовый в интерфейсе — хардкод <b>#5B21B6</b> (текст) / <b>#EDE9FE</b> (фон), используется в <code class="mono">.section-tag.purple</code>, <code class="mono">.badge-ai</code>, <code class="mono">.alt-full</code>, <code class="mono">.depth-standard</code>, <code class="mono">.ai-panel-title</code> — все с разными оттенками, не связанными с переменной.
+      </div>
+      <div class="ds-fix">Эталон: переопределить --purple: #5B21B6 (или удалить как мёртвый код) и завести --purple-tint: #EDE9FE, переиспользовать вместо хардкода в перечисленных классах. --teal — либо начать использовать, либо убрать.</div>
+    </div>
+  </div>
+
+  <div class="ds-audit-item">
+    <div class="ds-audit-num">03</div>
+    <div>
+      <div class="ds-audit-title">Статусные success/warn/danger — по 2 оттенка текста и 2-3 оттенка фона на роль</div>
+      <div class="ds-audit-body">
+        Success-текст: <b>#15803D</b> (большинство мест) и <b>#166534</b> (только <code class="mono">.conflict-box.ok</code>) — почти одинаковые, но разные значения. Warn-текст: <b>#B45309</b> и <b>#92400E</b> (<code class="mono">.conflict-box</code>, <code class="mono">.weak-link</code>, <code class="mono">.snapshot-warn</code>) — тоже два разных «тёмно-оранжевых». Фоны warn: #FEF3C7 / #FFFBEB / #FFF7ED — три варианта светло-жёлтого.
+      </div>
+      <div class="ds-fix">Эталон на статус — один текст + один фон: success #15803D/#DCFCE7, warn #B45309/#FEF3C7, danger #B91C1C/#FEE2E2. Остальные вхождения (#166534, #92400E, #FFFBEB, #FFF7ED) свести к ним.</div>
+    </div>
+  </div>
+
+  <div class="ds-audit-item">
+    <div class="ds-audit-num">04</div>
+    <div>
+      <div class="ds-audit-title">10 разных значений border-radius без системы</div>
+      <div class="ds-audit-body">
+        В коде встречаются: <b>4, 6, 7, 8, 10, 12, 16, 20, 99px</b> и <b>50%</b> — 8 «числовых» ступеней на плоскую сетку компонентов.
+      </div>
+      <div class="ds-fix">Эталон — 3 ступени + pill: <b>6px</b> (мелкие теги/бейджи), <b>10px</b> (стандартный элемент — кнопка, инпут, мини-карточка), <b>16px</b> (--radius, крупная карточка). 99px — отдельно для чипов/переключателей. Единичные 4px, 7px, 20px — привести к ближайшей ступени (модалка 20px можно оставить как осознанное исключение для крупной поверхности).</div>
+    </div>
+  </div>
+
+  <div class="ds-audit-item">
+    <div class="ds-audit-num">05</div>
+    <div>
+      <div class="ds-audit-title">8 визуально разных «кнопок» без общей базы</div>
+      <div class="ds-audit-body">
+        <code class="mono">.btn-*</code> (radius 10px, паддинг 12/24), <code class="mono">.nav-btn</code>/<code class="mono">.af-chip</code>/<code class="mono">.hyp-chip</code> (radius 99px, паддинг 6-8/14-18), <code class="mono">.layer-tab</code> (radius 8px, паддинг 7/16), <code class="mono">.ai-btn-*</code> (radius 7px, паддинг 5/12), <code class="mono">.rm-card-btn</code> (radius 6px, паддинг 3/9), <code class="mono">.add-hyp-row button</code> (radius 8px, паддинг 8/14). У каждой — свой размер и толщина рамки.
+      </div>
+      <div class="ds-fix">Эталон — 2 официальных типа: «кнопка» (.btn, 10px radius) для действий и «чип/переключатель» (99px pill) для фильтров и множественного выбора. .layer-tab, .ai-btn-*, .rm-card-btn, .add-hyp-row button — подвести под один из двух типов вместо собственных радиусов.</div>
+    </div>
+  </div>
+
+  <div class="ds-audit-item">
+    <div class="ds-audit-num">06</div>
+    <div>
+      <div class="ds-audit-title">Заголовки карточек не выстроены в иерархию</div>
+      <div class="ds-audit-body">
+        <code class="mono">.card-title</code> 1.2rem, <code class="mono">.snapshot-title</code> 1.3rem, <code class="mono">.score-val</code> 1.3rem, <code class="mono">.modal-title</code> 1.05rem, <code class="mono">.ai-panel-title</code> .95rem — пять «заголовочных» размеров Syne без явного правила, когда какой применять.
+      </div>
+      <div class="ds-fix">Эталон — 3 уровня: <b>1.2rem</b> (заголовок карточки верхнего уровня), <b>1.0rem</b> (заголовок вложенного блока — модалка, панель), <b>.85rem</b> (мелкий акцентный заголовок — бейдж/тег). Привести .snapshot-title, .score-val, .ai-panel-title к ближайшему уровню.</div>
+    </div>
+  </div>
+
+  <div class="ds-audit-item">
+    <div class="ds-audit-num">07</div>
+    <div>
+      <div class="ds-audit-title">У кнопок нет состояния disabled</div>
+      <div class="ds-audit-body">
+        <code class="mono">.btn</code> описывает default/hover/active (<code class="mono">transform:scale(.97)</code>), но disabled-стиля нет вообще — неактивная кнопка сейчас выглядела бы как активная.
+      </div>
+      <div class="ds-fix">Это не расхождение значений, а пробел: стоит завести .btn:disabled с уменьшенной непрозрачностью (например opacity:.5) и cursor:not-allowed, когда появится первый реальный сценарий блокировки кнопки.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ COLORS ═══════════════════ -->
+<div class="card ds-section" id="colors">
+  <div class="section-tag">Цвета</div>
+  <div class="card-title">Палитра</div>
+  <div class="card-sub">12 переменных из :root в styles.css</div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Базовые</h2>
+  <div class="ds-grid" style="margin-bottom:24px">
+    <div><div class="ds-swatch" style="background:var(--bg);border:1.5px solid var(--border)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--bg</div><div class="ds-swatch-hex mono">#F0F1F7</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--surface)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--surface</div><div class="ds-swatch-hex mono">#fff</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--text)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--text</div><div class="ds-swatch-hex mono">#0F1729</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--muted)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--muted</div><div class="ds-swatch-hex mono">#7C83A0</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--border)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--border</div><div class="ds-swatch-hex mono">#E2E5F0</div></div></div>
+  </div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Primary / Accent</h2>
+  <div class="ds-grid" style="margin-bottom:24px">
+    <div><div class="ds-swatch" style="background:var(--primary)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--primary</div><div class="ds-swatch-hex mono">#1E2A78</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--accent)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--accent</div><div class="ds-swatch-hex mono">#6B6EF9</div></div></div>
+  </div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Семантика</h2>
+  <div class="ds-grid">
+    <div><div class="ds-swatch" style="background:var(--success)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--success</div><div class="ds-swatch-hex mono">#22C55E</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--warn)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--warn</div><div class="ds-swatch-hex mono">#F59E0B</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--danger)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--danger</div><div class="ds-swatch-hex mono">#EF4444</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--blue)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--blue</div><div class="ds-swatch-hex mono">#3B82F6</div><div class="ds-swatch-note">⚠ используется 1 раз</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--purple)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--purple</div><div class="ds-swatch-hex mono">#8B5CF6</div><div class="ds-swatch-note">⚠ не используется</div></div></div>
+    <div><div class="ds-swatch" style="background:var(--teal)"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">--teal</div><div class="ds-swatch-hex mono">#14B8A6</div><div class="ds-swatch-note">⚠ не используется</div></div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Хардкод вне переменных, играющий ту же роль (см. Аудит 01–03)</h2>
+  <div class="ds-grid">
+    <div><div class="ds-swatch" style="background:#1D4ED8"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#1D4ED8</div><div class="ds-swatch-hex mono">verdict-next / badge-user</div></div></div>
+    <div><div class="ds-swatch" style="background:#0369A1"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#0369A1</div><div class="ds-swatch-hex mono">alt-lean / depth-quick</div></div></div>
+    <div><div class="ds-swatch" style="background:#5B21B6"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#5B21B6</div><div class="ds-swatch-hex mono">purple tag / badge-ai</div></div></div>
+    <div><div class="ds-swatch" style="background:#15803D"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#15803D</div><div class="ds-swatch-hex mono">success text (основной)</div></div></div>
+    <div><div class="ds-swatch" style="background:#166534"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#166534</div><div class="ds-swatch-hex mono">success text (conflict-box.ok)</div></div></div>
+    <div><div class="ds-swatch" style="background:#B45309"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#B45309</div><div class="ds-swatch-hex mono">warn text (основной)</div></div></div>
+    <div><div class="ds-swatch" style="background:#92400E"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#92400E</div><div class="ds-swatch-hex mono">warn text (conflict/weak-link)</div></div></div>
+    <div><div class="ds-swatch" style="background:#B91C1C"></div><div class="ds-swatch-meta"><div class="ds-swatch-name">#B91C1C</div><div class="ds-swatch-hex mono">danger text</div></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TYPOGRAPHY ═══════════════════ -->
+<div class="card ds-section" id="type">
+  <div class="section-tag">Типографика</div>
+  <div class="card-title">Шрифты и размеры</div>
+  <div class="card-sub">Syne — заголовки, DM Sans — текст, DM Mono — числа/код</div>
+
+  <div class="ds-specimen">
+    <div class="header-text"><h1>Aa Продукт 123</h1></div>
+    <div class="ds-meta"><code>.header-text h1</code> — Syne 700, 1.15rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="snapshot-title">Aa Продукт 123</div>
+    <div class="ds-meta"><code>.snapshot-title</code> — Syne 700, 1.3rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="score-val">Aa 4.2</div>
+    <div class="ds-meta"><code>.score-val</code> — Syne 700, 1.3rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="card-title">Aa Заголовок карточки</div>
+    <div class="ds-meta"><code>.card-title</code> — Syne 700, 1.2rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="pas-val">Aa 82</div>
+    <div class="ds-meta"><code>.pas-val</code> — Syne 800, 1.4rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="modal-title">Aa Заголовок модалки</div>
+    <div class="ds-meta"><code>.modal-title</code> — Syne 700, 1.05rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="ai-panel-title">Aa AI Office</div>
+    <div class="ds-meta"><code>.ai-panel-title</code> — Syne 700, .95rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="header-text"><p>Aa Стратегический анализ в реальном времени</p></div>
+    <div class="ds-meta"><code>.header-text p</code> — DM Sans 400, .8rem, --muted</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="card-sub">Aa Подзаголовок карточки — вспомогательный текст</div>
+    <div class="ds-meta"><code>.card-sub</code> — DM Sans 400, .85rem, --muted</div>
+  </div>
+  <div class="ds-specimen">
+    <div style="font-size:.92rem">Aa Базовый текст интерфейса, кнопки, инпуты</div>
+    <div class="ds-meta"><code>body / .btn / .field input</code> — DM Sans 400/500, .92rem</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="section-tag">Aa Section Tag</div>
+    <div class="ds-meta"><code>.section-tag</code> — DM Sans 600, .72rem, uppercase, letter-spacing .08em</div>
+  </div>
+  <div class="ds-specimen">
+    <div class="mono">Aa 12 345.67</div>
+    <div class="ds-meta"><code>.mono</code> — DM Mono 400, .82rem</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ BUTTONS ═══════════════════ -->
+<div class="card ds-section" id="buttons">
+  <div class="section-tag">Кнопки</div>
+  <div class="card-title">Состояния и варианты</div>
+  <div class="card-sub">Наведи курсор, чтобы увидеть живой hover; клик — active (scale .97)</div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">.btn — базовый компонент</h2>
+  <div class="ds-row" style="margin-bottom:24px">
+    <button class="btn btn-primary">Primary</button>
+    <button class="btn btn-accent">Accent</button>
+    <button class="btn btn-ghost">Ghost</button>
+    <button class="btn btn-danger">Danger</button>
+    <button class="btn btn-primary btn-sm">Primary sm</button>
+  </div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Кнопко-подобные элементы вне .btn (см. Аудит 05)</h2>
+  <div class="ds-row">
+    <button class="nav-btn active">nav-btn.active</button>
+    <button class="nav-btn">nav-btn</button>
+    <button class="layer-tab active">layer-tab.active</button>
+    <button class="layer-tab">layer-tab</button>
+  </div>
+  <div class="ds-row">
+    <button class="hyp-chip selected">hyp-chip.selected</button>
+    <button class="hyp-chip">hyp-chip</button>
+    <button class="af-chip selected">af-chip.selected</button>
+    <button class="af-chip">af-chip</button>
+  </div>
+  <div class="ds-row">
+    <button class="ai-btn ai-btn-accept">ai-btn-accept</button>
+    <button class="ai-btn ai-btn-reject">ai-btn-reject</button>
+    <button class="rm-card-btn">rm-card-btn</button>
+  </div>
+  <div class="add-hyp-row" style="max-width:280px">
+    <input type="text" placeholder="add-hyp-row input">
+    <button>+ Добавить</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ CARDS ═══════════════════ -->
+<div class="card ds-section" id="cards">
+  <div class="section-tag">Карточки</div>
+  <div class="card-title">Поверхности</div>
+  <div class="card-sub">От крупной (.card, 16px) до компактной (.rm-card, 10px)</div>
+
+  <div class="ds-mini-board" style="margin-bottom:16px">
+    <div class="card" style="margin-bottom:0;padding:18px">
+      <div class="section-tag">.card</div>
+      <div class="card-title" style="font-size:1rem">Заголовок</div>
+      <div class="card-sub" style="margin-bottom:0">16px radius, --sh тень, 28px паддинг (здесь уменьшен для примера)</div>
+    </div>
+    <div class="rm-card" style="margin-bottom:0">
+      <div class="rm-card-title">rm-card — карточка роадмапа</div>
+      <div class="rm-card-meta">10px radius, --sh тень</div>
+      <div class="rm-card-badges"><span class="rm-card-badge badge-ai">AI</span><span class="rm-card-badge badge-user">USER</span></div>
+    </div>
+  </div>
+
+  <div class="ds-mini-board" style="margin-bottom:16px">
+    <div class="ai-initiative" style="margin-bottom:0">
+      <div class="ai-initiative-text">
+        <div class="ai-initiative-title">ai-initiative</div>
+        <div class="ai-initiative-reason">10px radius, рамка #C4B5FD</div>
+      </div>
+    </div>
+    <div class="score-item">
+      <div class="score-name">score-item</div>
+      <div class="score-row"><div class="score-val">4.0</div><div class="score-bar"><div class="score-fill" style="width:80%;background:var(--success)"></div></div></div>
+    </div>
+  </div>
+
+  <div class="ds-mini-board" style="margin-bottom:16px">
+    <div class="chain-node">
+      <div class="cn-lbl">chain-node</div>
+      <div class="cn-val">10px radius, фон #F7F8FF</div>
+    </div>
+    <div class="econ-item">
+      <div class="econ-lbl">econ-item</div>
+      <div class="econ-val econ-pos">10px radius, фон #F7F8FF</div>
+    </div>
+  </div>
+
+  <div class="snapshot-card" style="margin-bottom:0;padding:18px">
+    <div class="snapshot-title" style="font-size:1.1rem">snapshot-card</div>
+    <div class="snapshot-sub" style="margin-bottom:0">16px radius (--radius), фон --primary, текст белый</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FORMS ═══════════════════ -->
+<div class="card ds-section" id="forms">
+  <div class="section-tag">Поля форм</div>
+  <div class="card-title">Инпуты, селекты, чипы</div>
+  <div class="card-sub">Кликни в поле — увидишь живой focus-ring (rgba accent .12)</div>
+
+  <div class="form-grid" style="margin-bottom:20px">
+    <div class="field">
+      <label>Текстовое поле</label>
+      <input type="text" placeholder="Например: Figma, Duolingo">
+    </div>
+    <div class="field">
+      <label>Select</label>
+      <select><option>Вариант 1</option><option>Вариант 2</option></select>
+    </div>
+    <div class="field field-full">
+      <label>Textarea</label>
+      <textarea placeholder="Многострочный ввод"></textarea>
+    </div>
+  </div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Теги и мультивыбор</h2>
+  <div class="antifocus-wrap" style="margin-bottom:12px">
+    <div class="af-chip selected">af-chip выбран</div>
+    <div class="af-chip">af-chip</div>
+  </div>
+  <div class="hyp-tags">
+    <div class="hyp-tag">hyp-tag <button>×</button></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SPACING & RADIUS ═══════════════════ -->
+<div class="card ds-section" id="space">
+  <div class="section-tag">Отступы и радиусы</div>
+  <div class="card-title">Шкала значений</div>
+  <div class="card-sub">Реальные числа, встречающиеся в styles.css (см. Аудит 04 по радиусам)</div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Отступы (gap / padding)</h2>
+  <div style="margin-bottom:24px">
+    <div class="ds-space-row"><div class="ds-space-label">4px</div><div class="ds-space-bar" style="width:4px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">6px</div><div class="ds-space-bar" style="width:6px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">8px</div><div class="ds-space-bar" style="width:8px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">10px</div><div class="ds-space-bar" style="width:10px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">12px</div><div class="ds-space-bar" style="width:12px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">14px</div><div class="ds-space-bar" style="width:14px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">16px</div><div class="ds-space-bar" style="width:16px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">18px</div><div class="ds-space-bar" style="width:18px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">20px</div><div class="ds-space-bar" style="width:20px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">24px</div><div class="ds-space-bar" style="width:24px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">28px</div><div class="ds-space-bar" style="width:28px"></div></div>
+    <div class="ds-space-row"><div class="ds-space-label">32px</div><div class="ds-space-bar" style="width:32px"></div></div>
+  </div>
+
+  <h2 style="font-size:.85rem;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Радиусы</h2>
+  <div class="ds-row">
+    <div class="ds-radius-box" style="border-radius:4px">4px</div>
+    <div class="ds-radius-box" style="border-radius:6px">6px</div>
+    <div class="ds-radius-box" style="border-radius:7px">7px</div>
+    <div class="ds-radius-box" style="border-radius:8px">8px</div>
+    <div class="ds-radius-box" style="border-radius:10px">10px</div>
+    <div class="ds-radius-box" style="border-radius:12px">12px</div>
+    <div class="ds-radius-box" style="border-radius:16px">16px<br>(--radius)</div>
+    <div class="ds-radius-box" style="border-radius:20px">20px</div>
+    <div class="ds-radius-box" style="border-radius:99px">99px<br>pill</div>
+    <div class="ds-radius-box" style="border-radius:50%">50%<br>circle</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SHADOWS ═══════════════════ -->
+<div class="card ds-section" id="shadows">
+  <div class="section-tag">Тени</div>
+  <div class="card-title">box-shadow</div>
+  <div class="card-sub">Две системные переменные + точечные тени у кнопок и модалки</div>
+
+  <div class="ds-grid">
+    <div class="ds-shadow-box" style="box-shadow:var(--sh)">--sh (card)</div>
+    <div class="ds-shadow-box" style="box-shadow:var(--sh2)">--sh2 (card:hover)</div>
+    <div class="ds-shadow-box" style="box-shadow:0 4px 14px rgba(30,42,120,.3)">btn-primary</div>
+    <div class="ds-shadow-box" style="box-shadow:0 4px 14px rgba(107,110,249,.3)">btn-accent</div>
+    <div class="ds-shadow-box" style="box-shadow:0 20px 60px rgba(30,42,120,.2)">.modal</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
