@@ -3,43 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Product Architecture Copilot</title>
+
+<title>PAC — AI-копилот для продуктовой стратегии и приоритизации гипотез</title>
+<meta name="description" content="PAC (Product Architecture Copilot) — AI-ассистент для product-менеджеров и CPO: формулирует стратегию по AARRR, оценивает гипотезы по 4 параметрам и строит причинно-следственные цепочки для roadmap.">
+<meta name="keywords" content="product architecture copilot, PAC, AI для product manager, продуктовая стратегия, приоритизация гипотез, AARRR, product roadmap, оценка гипотез, причинно-следственные цепочки, CPO, продуктовая аналитика">
+<meta name="author" content="Product Architecture Copilot">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="theme-color" content="#0a0a0a">
+
+<link rel="canonical" href="https://pac-copilot.netlify.app/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Product Architecture Copilot">
+<meta property="og:title" content="PAC — AI-копилот для продуктовой стратегии и приоритизации гипотез">
+<meta property="og:description" content="AI-ассистент для PM и CPO: стратегия по AARRR, скоринг гипотез по 4 параметрам, причинно-следственные цепочки и roadmap в одном окне.">
+<meta property="og:url" content="https://pac-copilot.netlify.app/">
+<meta property="og:image" content="https://pac-copilot.netlify.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Product Architecture Copilot — AI Head of Product">
+<meta property="og:locale" content="ru_RU">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PAC — AI-копилот для продуктовой стратегии и приоритизации гипотез">
+<meta name="twitter:description" content="AI-ассистент для PM и CPO: стратегия по AARRR, скоринг гипотез, причинно-следственные цепочки и roadmap.">
+<meta name="twitter:image" content="https://pac-copilot.netlify.app/og-image.png">
+<meta name="twitter:image:alt" content="Product Architecture Copilot — AI Head of Product">
+
+<!-- Favicons -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="alternate icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- Fonts: preconnect для ускорения LCP -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+
+<!-- Structured Data: SoftwareApplication -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Product Architecture Copilot",
+  "alternateName": "PAC",
+  "description": "AI-ассистент для product-менеджеров и CPO: формулирует стратегию по AARRR, оценивает гипотезы по 4 параметрам (strategic fit, impact, complexity, confidence) и строит причинно-следственные цепочки для roadmap.",
+  "url": "https://pac-copilot.netlify.app/",
+  "applicationCategory": "BusinessApplication",
+  "applicationSubCategory": "Product Management",
+  "operatingSystem": "Any (web-based)",
+  "browserRequirements": "Requires JavaScript. Requires HTML5.",
+  "inLanguage": "ru",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "featureList": [
+    "Формализация продуктовой стратегии по AARRR",
+    "Скоринг гипотез по 4 параметрам",
+    "Причинно-следственные цепочки инициатив",
+    "Product Architecture Score (PAS)",
+    "Управление roadmap с drag&drop",
+    "AI Office — генерация гипотез"
+  ]
+}
+</script>
 </head>
 <body>
 <div class="app">
 
+<!-- SEO fallback для no-JS краулеров (Yandex, GPTBot, ClaudeBot) и accessibility -->
+<noscript>
+  <section style="padding:24px;background:#fff;border-radius:16px;margin-bottom:20px;">
+    <h2>PAC — AI-копилот для продуктовой стратегии</h2>
+    <p>Product Architecture Copilot — AI-ассистент для product-менеджеров и CPO. Помогает формулировать продуктовую стратегию, оценивать гипотезы инициатив и управлять roadmap.</p>
+    <h3>Четыре модуля</h3>
+    <ul>
+      <li><strong>Стратегия</strong> — формализация цели квартала, фокуса по AARRR (Acquisition, Activation, Retention, Monetization, Infrastructure), anti-focus, ограничений команды и бюджета. История версий стратегии.</li>
+      <li><strong>Гипотеза</strong> — анализ инициативы по 4 параметрам: strategic fit, impact, complexity, confidence. Причинно-следственная цепочка «инициатива → поведение → промежуточная метрика → целевая метрика». Вердикт now / next / later / reject.</li>
+      <li><strong>Roadmap</strong> — колонки Now / Next / Later / Reject с drag&amp;drop, история решений, снапшот приоритетов.</li>
+      <li><strong>AI Office</strong> — системные инициативы, Product Architecture Score (PAS) — индекс зрелости 0–100 по 5 компонентам, ретроспектива версий стратегии.</li>
+    </ul>
+    <h3>Для кого</h3>
+    <p>Product managers, CPO, продуктовые команды на стадии MVP, Early Growth и Scale. Категории продукта: SaaS B2B, SaaS B2C, Marketplace, EdTech, FinTech, HealthTech, E-commerce, Mobile.</p>
+    <p><strong>Приложение работает без регистрации в браузере. Требуется JavaScript.</strong></p>
+  </section>
+</noscript>
+
 <!-- HEADER -->
-<div class="header">
-  <div class="logo">
-    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+<header class="header" role="banner">
+  <div class="logo" aria-hidden="true">
+    <svg viewBox="0 0 24 24" role="img" aria-label="Логотип PAC"><title>Логотип Product Architecture Copilot</title><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
   </div>
   <div class="header-text">
-    <h1>Product Architecture Copilot</h1>
-    <p>AI Head of Product · Стратегический анализ в реальном времени</p>
+    <h1>Product Architecture Copilot — AI-стратег для product-менеджеров</h1>
+    <p>AI Head of Product · Стратегический анализ гипотез в реальном времени</p>
   </div>
-  <div class="pas-widget">
+  <div class="pas-widget" role="status" aria-live="polite" aria-label="Product Architecture Score">
     <div class="pas-lbl">Architecture Score</div>
     <div class="pas-row">
       <div class="pas-val" id="pasVal">—</div>
       <div class="pas-bar-wrap"><div class="pas-bar" id="pasBar" style="width:0%"></div></div>
     </div>
   </div>
-</div>
+</header>
 
 <!-- NAV -->
-<div class="nav">
-  <button class="nav-btn active" id="navStrategy" onclick="showTab('strategy')">Стратегия</button>
-  <button class="nav-btn" id="navHyp" onclick="showTab('hypothesis')">Гипотеза<div class="nav-dot" id="dotHyp"></div></button>
-  <button class="nav-btn" id="navRoadmap" onclick="showTab('roadmap')">Roadmap<div class="nav-dot" id="dotRoadmap"></div></button>
-  <button class="nav-btn" id="navOffice" onclick="showTab('office')">AI Office<div class="nav-dot" id="dotOffice"></div></button>
-</div>
+<nav class="nav" role="navigation" aria-label="Основные разделы приложения">
+  <button class="nav-btn active" id="navStrategy" onclick="showTab('strategy')" aria-controls="tab-strategy">Стратегия</button>
+  <button class="nav-btn" id="navHyp" onclick="showTab('hypothesis')" aria-controls="tab-hypothesis">Гипотеза<div class="nav-dot" id="dotHyp" aria-hidden="true"></div></button>
+  <button class="nav-btn" id="navRoadmap" onclick="showTab('roadmap')" aria-controls="tab-roadmap">Roadmap<div class="nav-dot" id="dotRoadmap" aria-hidden="true"></div></button>
+  <button class="nav-btn" id="navOffice" onclick="showTab('office')" aria-controls="tab-office">AI Office<div class="nav-dot" id="dotOffice" aria-hidden="true"></div></button>
+</nav>
+
+<main role="main">
 
 <!-- ══════════════════════════════════════════════ -->
 <!-- STRATEGY TAB                                   -->
 <!-- ══════════════════════════════════════════════ -->
-<div id="tab-strategy">
+<section id="tab-strategy" aria-label="Стратегия продукта">
   <div class="stepper fade-in">
     <div class="step active" id="step1"><div class="step-num">1</div><div class="step-label">Продукт</div></div>
     <div class="step-line" id="line1"></div>
@@ -52,7 +138,7 @@
   <div id="stratStep1">
     <div class="card fade-in">
       <div class="section-tag">Шаг 1 из 3 — Продукт</div>
-      <div class="card-title">Расскажи о своём продукте</div>
+      <h2 class="card-title">Расскажи о своём продукте</h2>
       <div class="card-sub">PAC использует эти данные для контекстного анализа и генерации гипотез</div>
       <div class="form-grid">
         <div class="field">
@@ -94,10 +180,10 @@
   <div id="stratStep2" class="hidden">
     <div class="card fade-in">
       <div class="section-tag">Шаг 2 из 3 — Стратегия</div>
-      <div class="card-title">Стратегическая цель и контекст</div>
+      <h2 class="card-title">Стратегическая цель и контекст</h2>
       <div class="card-sub">Формализуем стратегию — она станет основой для алгоритмической оценки гипотез</div>
 
-      <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">A · Стратегическая цель</div>
+      <h3 style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">A · Стратегическая цель</h3>
       <div class="form-grid" style="margin-bottom:20px">
         <div class="field">
           <label>Целевая метрика</label>
@@ -135,7 +221,7 @@
         </div>
       </div>
 
-      <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">B · Фокус и Anti-focus</div>
+      <h3 style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">B · Фокус и Anti-focus</h3>
       <div class="form-grid" style="margin-bottom:20px">
         <div class="field">
           <label>Фокус квартала</label>
@@ -170,7 +256,7 @@
         </div>
       </div>
 
-      <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">C · Ограничения</div>
+      <h3 style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">C · Ограничения</h3>
       <div class="form-grid-3" style="margin-bottom:20px">
         <div class="field">
           <label>Стадия продукта</label>
@@ -225,7 +311,7 @@
   <div id="stratStep3" class="hidden">
     <div class="card fade-in">
       <div class="section-tag">Шаг 3 из 3 — Стратегические гипотезы</div>
-      <div class="card-title">Причинно-следственные утверждения</div>
+      <h2 class="card-title">Причинно-следственные утверждения</h2>
       <div class="card-sub">Что мы считаем истиной о нашем продукте? Это основа для анализа логических цепочек. (Опционально)</div>
       <div id="stratHypTags" class="hyp-tags"></div>
       <div class="add-hyp-row mt8">
@@ -235,7 +321,7 @@
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="toStep2()">← Назад</button>
         <button class="btn btn-primary" style="flex:2" onclick="saveStrategy()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
           Сохранить стратегию v<span id="versionPreview">1</span>
         </button>
       </div>
@@ -249,12 +335,12 @@
       <div id="stratVersionList"></div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- ══════════════════════════════════════════════ -->
 <!-- HYPOTHESIS TAB                                 -->
 <!-- ══════════════════════════════════════════════ -->
-<div id="tab-hypothesis" class="hidden">
+<section id="tab-hypothesis" class="hidden" aria-label="Анализ гипотезы">
   <div class="ctx-strip fade-in" id="contextStrip"></div>
 
   <!-- AI Suggestions from Office -->
@@ -262,27 +348,27 @@
 
   <div class="card fade-in">
     <div class="section-tag purple">💡 Идеи на основе продукта</div>
-    <div class="card-title">Выбери готовую гипотезу</div>
+    <h2 class="card-title">Выбери готовую гипотезу</h2>
     <div class="card-sub">Сгенерированы с учётом фокуса, anti-focus и описания продукта</div>
     <div class="hyp-chips" id="hypChips"></div>
   </div>
 
   <div class="card fade-in">
     <div class="section-tag">Своя инициатива</div>
-    <div class="card-title">Опиши инициативу</div>
+    <h2 class="card-title">Опиши инициативу</h2>
     <div class="field">
       <textarea id="hypText" placeholder="Опиши что хочешь сделать и зачем. Чем подробнее — тем точнее анализ.&#10;Пример: Добавить реферальную механику — пользователь получает месяц бесплатно за каждого приглашённого, кто перешёл на платный план."></textarea>
     </div>
     <div class="mt16">
       <button class="btn btn-accent btn-full" onclick="analyzeHyp()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         Проанализировать
       </button>
     </div>
   </div>
 
   <div class="thinking" id="thinkingAnim">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" role="img" aria-label="PAC анализирует"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
     <span id="thinkingLabel">PAC анализирует гипотезу</span>
     <div class="dots"><span></span><span></span><span></span></div>
   </div>
@@ -330,24 +416,24 @@
         <div class="alts" id="altsBlock"></div>
 
         <button class="btn btn-primary btn-full mt8" onclick="addToRoadmap()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
           Добавить в Roadmap
         </button>
       </div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- ══════════════════════════════════════════════ -->
 <!-- ROADMAP TAB                                    -->
 <!-- ══════════════════════════════════════════════ -->
-<div id="tab-roadmap" class="hidden">
+<section id="tab-roadmap" class="hidden" aria-label="Roadmap продукта">
   <div id="overloadAlert" class="alert"><span>⚠️</span><span id="alertText"></span></div>
   <div id="snapshotBlock" class="hidden"></div>
 
   <div class="card fade-in">
     <div class="section-tag">Roadmap</div>
-    <div class="card-title">Стратегический Roadmap</div>
+    <h2 class="card-title">Стратегический Roadmap</h2>
     <div class="roadmap-board">
       <div class="rm-col now">
         <div class="rm-col-head"><span class="rm-col-title">Now</span><span class="rm-cnt" id="cnt-now">0</span></div>
@@ -379,16 +465,16 @@
       <div style="font-size:.85rem;color:var(--muted);">Пока нет инициатив. Добавь первую!</div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- ══════════════════════════════════════════════ -->
 <!-- AI OFFICE TAB                                  -->
 <!-- ══════════════════════════════════════════════ -->
-<div id="tab-office" class="hidden">
+<section id="tab-office" class="hidden" aria-label="AI Office и Architecture Score">
 
   <div class="card card-ai fade-in">
     <div class="section-tag purple">🤖 AI Product Office</div>
-    <div class="card-title">Системные инициативы</div>
+    <h2 class="card-title">Системные инициативы</h2>
     <div class="card-sub">PAC анализирует пробелы в roadmap и генерирует инициативы от своего имени</div>
     <div id="aiInitiativesBlock">
       <div style="font-size:.85rem;color:var(--muted);">Инициативы появятся после того как ты добавишь хотя бы одну гипотезу в roadmap.</div>
@@ -400,22 +486,23 @@
 
   <div class="card fade-in">
     <div class="section-tag teal">Product Architecture Score</div>
-    <div class="card-title" id="pasCardTitle">Индекс зрелости архитектуры: —</div>
+    <h2 class="card-title" id="pasCardTitle">Индекс зрелости архитектуры: —</h2>
     <div class="card-sub">Обновляется после каждой гипотезы. Оценивает распределение, связку с метриками и наличие причинных цепочек.</div>
     <div id="pasBreakdown"></div>
   </div>
 
   <div class="card fade-in">
     <div class="section-tag">Ретроспектива</div>
-    <div class="card-title">Версии стратегии</div>
+    <h2 class="card-title">Версии стратегии</h2>
     <div class="card-sub">История стратегических изменений с привязкой гипотез</div>
     <div id="retroBlock">
       <div style="font-size:.85rem;color:var(--muted);">Сохрани первую стратегию, чтобы начать ретроспективу.</div>
     </div>
   </div>
 
-</div>
+</section>
 
+</main>
 </div><!-- /app -->
 
 <!-- MODAL -->
@@ -429,17 +516,17 @@
   </div>
 </div>
 
-<script src="js/state.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/scoring.js"></script>
-<script src="js/suggestions.js"></script>
-<script src="js/strategy.js"></script>
-<script src="js/pas.js"></script>
-<script src="js/roadmap.js"></script>
-<script src="js/analysis.js"></script>
-<script src="js/office.js"></script>
-<script src="js/modal.js"></script>
-<script src="js/nav.js"></script>
-<script src="js/app.js"></script>
+<script src="js/state.js" defer></script>
+<script src="js/utils.js" defer></script>
+<script src="js/scoring.js" defer></script>
+<script src="js/suggestions.js" defer></script>
+<script src="js/strategy.js" defer></script>
+<script src="js/pas.js" defer></script>
+<script src="js/roadmap.js" defer></script>
+<script src="js/analysis.js" defer></script>
+<script src="js/office.js" defer></script>
+<script src="js/modal.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/app.js" defer></script>
 </body>
 </html>

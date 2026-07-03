@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /pac.html
+
+Sitemap: https://pac-copilot.netlify.app/sitemap.xml
