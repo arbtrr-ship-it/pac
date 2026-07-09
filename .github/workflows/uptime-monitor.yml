@@ -60,8 +60,7 @@ jobs:
           FAILURES: ${{ steps.check.outputs.message }}
         run: |
           set +x
+          TEXT=$(printf '%s\n\n%s' "🔴 PAC (trypac.netlify.app): критичная проверка не пройдена" "$FAILURES")
           curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
-            --data-urlencode "text=🔴 PAC (trypac.netlify.app): критичная проверка не пройдена
-
-${FAILURES}"
+            --data-urlencode "text=${TEXT}"
