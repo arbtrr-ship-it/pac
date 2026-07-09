@@ -1,0 +1,66 @@
+name: Uptime Monitor
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://trypac.netlify.app
+    steps:
+      - name: Check site availability and rendering
+        id: check
+        run: |
+          set -uo pipefail
+          failures=()
+
+          code=$(curl -s -o /tmp/page.html -w "%{http_code}" --max-time 15 "$SITE_URL/")
+          if [ "$code" != "200" ]; then
+            failures+=("Главная страница вернула HTTP $code (ожидался 200)")
+          fi
+
+          if ! grep -q "AI-копилот для продуктовой стратегии" /tmp/page.html 2>/dev/null; then
+            failures+=("На странице не найден ожидаемый заголовок — похоже, отдаётся заглушка/ошибка вместо приложения")
+          fi
+
+          for f in state utils scoring suggestions strategy pas roadmap analysis office modal nav app; do
+            jc=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$SITE_URL/js/$f.js")
+            if [ "$jc" != "200" ]; then
+              failures+=("js/$f.js вернул HTTP $jc — приложение не загрузится")
+            fi
+          done
+
+          cc=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$SITE_URL/styles.css")
+          if [ "$cc" != "200" ]; then
+            failures+=("styles.css вернул HTTP $cc")
+          fi
+
+          if [ ${#failures[@]} -gt 0 ]; then
+            echo "failed=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "message<<PACEOF"
+              printf '%s\n' "${failures[@]}"
+              echo "PACEOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "failed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Telegram alert
+        if: steps.check.outputs.failed == 'true'
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          FAILURES: ${{ steps.check.outputs.message }}
+        run: |
+          set +x
+          TEXT=$(printf '%s\n\n%s' "🔴 PAC (trypac.netlify.app): критичная проверка не пройдена" "$FAILURES")
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT_ID}" \
+            --data-urlencode "text=${TEXT}"
