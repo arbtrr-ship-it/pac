@@ -25,7 +25,7 @@ jobs:
             failures+=("Главная страница вернула HTTP $code (ожидался 200)")
           fi
 
-          if ! grep -q "AI-копилот для продуктовой стратегии" /tmp/page.html 2>/dev/null; then
+          if ! grep -q "Product Architecture Copilot" /tmp/page.html 2>/dev/null; then
             failures+=("На странице не найден ожидаемый заголовок — похоже, отдаётся заглушка/ошибка вместо приложения")
           fi
 
@@ -64,3 +64,4 @@ jobs:
           curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${CHAT_ID}" \
             --data-urlencode "text=${TEXT}"
+          exit 1
