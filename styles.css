@@ -213,6 +213,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .badge-user{background:#EDEDFE;color:#1D4ED8}
 .rm-card-btn{font-size:.7rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);transition:all .15s;margin-top:5px}
 .rm-card-btn:hover{background:#EDEDFE;color:var(--accent);border-color:var(--accent)}
+/* Тач-фолбэк для drag&drop: селект скрыт на десктопе (там работает drag),
+   показывается только на тач-устройствах (см. @media pointer:coarse ниже) */
+.rm-card-move{display:none;align-items:center;gap:8px;margin-top:8px}
+.rm-move-lbl{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+.rm-move-sel{flex:1;min-width:0;font-family:'DM Sans',sans-serif;font-size:.8rem;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;background:#FAFBFF;color:var(--text);outline:none}
+.rm-move-sel:focus{border-color:var(--accent)}
 .rm-drop-zone{min-height:32px;border-radius:8px;border:2px dashed transparent;transition:border-color .2s,background .2s}
 .rm-drop-zone.drag-over{border-color:var(--accent);background:#EDEDFE44}
 
@@ -370,4 +376,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .btn-sm{min-height:40px}
   .rm-card-btn{min-height:36px;display:inline-flex;align-items:center}
   .hyp-tag button{min-width:26px;min-height:26px;display:inline-flex;align-items:center;justify-content:center}
+
+  /* Тач-фолбэк перемещения карточек роадмапа: нативный HTML5 drag&drop
+     на тач не срабатывает, поэтому показываем селект «Переместить». */
+  .rm-card-move{display:flex}
+  .rm-move-sel{min-height:44px;font-size:16px}
 }
