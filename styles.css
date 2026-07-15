@@ -78,7 +78,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .hyp-tag button{border:none;background:none;cursor:pointer;color:var(--muted);font-size:.9rem;padding:0 2px;line-height:1}
 .hyp-tag button:hover{color:var(--danger)}
 .add-hyp-row{display:flex;gap:8px;margin-top:6px}
-.add-hyp-row input{flex:1;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;outline:none;background:#FAFBFF;color:var(--text);transition:border-color .2s}
+.add-hyp-row input{flex:1;min-width:0;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;outline:none;background:#FAFBFF;color:var(--text);transition:border-color .2s}
 .add-hyp-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(107,110,249,.12)}
 .add-hyp-row button{padding:8px 14px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-size:.82rem;font-weight:500;white-space:nowrap;transition:all .2s}
 
@@ -289,3 +289,81 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mt20{margin-top:20px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn .35s ease forwards}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE ADAPTATION
+   Единый мобильный слой. Точечные брейкпоинты выше
+   (form-grid 600, score-grid 540, roadmap 680/400) остаются.
+   ══════════════════════════════════════════════════════════ */
+
+/* Планшеты и меньше */
+@media (max-width:768px){
+  .app{padding:20px 14px 88px}
+  .card{padding:22px 20px}
+  .snapshot-card{padding:22px 20px}
+}
+
+/* Телефоны ≤560px */
+@media (max-width:560px){
+  .app{padding:16px 12px 80px}
+
+  /* Header — заголовок переносится, PAS-виджет остаётся справа */
+  .header{gap:12px;margin-bottom:22px}
+  .header-text h1{font-size:1rem}
+  .header-text p{font-size:.72rem}
+  .logo{width:40px;height:40px;border-radius:10px}
+  .logo svg{width:22px;height:22px}
+  .pas-val{font-size:1.25rem}
+
+  /* Карточки и заголовки */
+  .card{padding:20px 16px;margin-bottom:16px}
+  .card-title{font-size:1.08rem}
+  .card-sub{margin-bottom:16px}
+
+  /* Ряды кнопок — в столбик, чтобы длинные подписи не рвали сетку.
+     Перебиваем инлайновый flex:2 у второй кнопки шага. */
+  .btn-row{flex-direction:column}
+  .btn-row .btn{flex:1 1 auto;width:100%}
+
+  /* Причинно-следственная цепочка — вертикально, стрелки поворачиваем */
+  .chain{flex-direction:column;align-items:stretch}
+  .chain-node{width:100%;min-width:0;flex:1 1 auto}
+  .chain-arrow{margin:0;padding:2px 0;transform:rotate(90deg);align-self:center}
+
+  /* Модалка */
+  .modal-overlay{padding:12px}
+  .modal{padding:24px 18px;border-radius:16px}
+  .modal-header{margin-bottom:18px}
+  .modal-title{font-size:1rem}
+
+  /* iOS не зумит при фокусе, если шрифт полей ≥16px */
+  .field select,.field input,.field textarea,
+  .add-hyp-row input{font-size:16px}
+}
+
+/* Узкие экраны ≤400px */
+@media (max-width:400px){
+  .app{padding:14px 10px 76px}
+  .card{padding:18px 14px}
+
+  /* Компактный степпер: подпись только у активного шага */
+  .step .step-label{display:none}
+  .step.active .step-label{display:block}
+  .step-line{margin:0 6px}
+
+  /* Экономический слой — в один столбец */
+  .econ-row{grid-template-columns:1fr}
+
+  /* PAS-виджет: сжимаем полоску, чтобы не толкал заголовок */
+  .pas-bar-wrap{width:44px}
+}
+
+/* Тач-устройства: цели нажатия ≥44px (WCAG 2.5.5) */
+@media (hover:none) and (pointer:coarse){
+  .nav-btn{min-height:44px;display:inline-flex;align-items:center}
+  .af-chip,.hyp-chip,.layer-tab{min-height:44px;display:inline-flex;align-items:center}
+  .modal-close{width:44px;height:44px;font-size:1.2rem}
+  .btn-sm{min-height:40px}
+  .rm-card-btn{min-height:36px;display:inline-flex;align-items:center}
+  .hyp-tag button{min-width:26px;min-height:26px;display:inline-flex;align-items:center;justify-content:center}
+}
