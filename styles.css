@@ -307,13 +307,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 @media (max-width:560px){
   .app{padding:16px 12px 80px}
 
-  /* Header — заголовок переносится, PAS-виджет остаётся справа */
-  .header{gap:12px;margin-bottom:22px}
+  /* Header — логотип + заголовок владеют верхним рядом; PAS-виджет
+     уходит вниз отдельной строкой на всю ширину (иначе длинный h1
+     наезжает и выталкивает счёт в пустоту по центру). */
+  .header{gap:12px 14px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
+  .header-text{flex:1 1 0;min-width:0}
   .header-text h1{font-size:1rem}
   .header-text p{font-size:.72rem}
   .logo{width:40px;height:40px;border-radius:10px}
   .logo svg{width:22px;height:22px}
-  .pas-val{font-size:1.25rem}
+  .pas-widget{order:3;flex-basis:100%;flex-direction:row;align-items:center;
+    justify-content:space-between;gap:12px;margin-left:0;margin-top:2px;
+    padding-top:12px;border-top:1px solid var(--border)}
+  .pas-val{font-size:1.35rem}
+  .pas-bar-wrap{width:120px}
 
   /* Карточки и заголовки */
   .card{padding:20px 16px;margin-bottom:16px}
@@ -353,9 +360,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
   /* Экономический слой — в один столбец */
   .econ-row{grid-template-columns:1fr}
-
-  /* PAS-виджет: сжимаем полоску, чтобы не толкал заголовок */
-  .pas-bar-wrap{width:44px}
 }
 
 /* Тач-устройства: цели нажатия ≥44px (WCAG 2.5.5) */
