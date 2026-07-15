@@ -78,7 +78,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .hyp-tag button{border:none;background:none;cursor:pointer;color:var(--muted);font-size:.9rem;padding:0 2px;line-height:1}
 .hyp-tag button:hover{color:var(--danger)}
 .add-hyp-row{display:flex;gap:8px;margin-top:6px}
-.add-hyp-row input{flex:1;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;outline:none;background:#FAFBFF;color:var(--text);transition:border-color .2s}
+.add-hyp-row input{flex:1;min-width:0;font-family:'DM Sans',sans-serif;font-size:.85rem;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;outline:none;background:#FAFBFF;color:var(--text);transition:border-color .2s}
 .add-hyp-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(107,110,249,.12)}
 .add-hyp-row button{padding:8px 14px;border-radius:8px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-size:.82rem;font-weight:500;white-space:nowrap;transition:all .2s}
 
@@ -213,6 +213,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .badge-user{background:#EDEDFE;color:#1D4ED8}
 .rm-card-btn{font-size:.7rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);transition:all .15s;margin-top:5px}
 .rm-card-btn:hover{background:#EDEDFE;color:var(--accent);border-color:var(--accent)}
+/* Тач-фолбэк для drag&drop: селект скрыт на десктопе (там работает drag),
+   показывается только на тач-устройствах (см. @media pointer:coarse ниже) */
+.rm-card-move{display:none;align-items:center;gap:8px;margin-top:8px}
+.rm-move-lbl{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+.rm-move-sel{flex:1;min-width:0;font-family:'DM Sans',sans-serif;font-size:.8rem;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;background:#FAFBFF;color:var(--text);outline:none}
+.rm-move-sel:focus{border-color:var(--accent)}
 .rm-drop-zone{min-height:32px;border-radius:8px;border:2px dashed transparent;transition:border-color .2s,background .2s}
 .rm-drop-zone.drag-over{border-color:var(--accent);background:#EDEDFE44}
 
@@ -289,3 +295,90 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mt20{margin-top:20px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn .35s ease forwards}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE ADAPTATION
+   Единый мобильный слой. Точечные брейкпоинты выше
+   (form-grid 600, score-grid 540, roadmap 680/400) остаются.
+   ══════════════════════════════════════════════════════════ */
+
+/* Планшеты и меньше */
+@media (max-width:768px){
+  .app{padding:20px 14px 88px}
+  .card{padding:22px 20px}
+  .snapshot-card{padding:22px 20px}
+}
+
+/* Телефоны ≤560px */
+@media (max-width:560px){
+  .app{padding:16px 12px 80px}
+
+  /* Header — логотип + заголовок владеют верхним рядом; PAS-виджет
+     уходит вниз отдельной строкой на всю ширину (иначе длинный h1
+     наезжает и выталкивает счёт в пустоту по центру). */
+  .header{gap:12px 14px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
+  .header-text{flex:1 1 0;min-width:0}
+  .header-text h1{font-size:1rem}
+  .header-text p{font-size:.72rem}
+  .logo{width:40px;height:40px;border-radius:10px}
+  .logo svg{width:22px;height:22px}
+  .pas-widget{order:3;flex-basis:100%;flex-direction:row;align-items:center;
+    justify-content:space-between;gap:12px;margin-left:0;margin-top:2px;
+    padding-top:12px;border-top:1px solid var(--border)}
+  .pas-val{font-size:1.35rem}
+  .pas-bar-wrap{width:120px}
+
+  /* Карточки и заголовки */
+  .card{padding:20px 16px;margin-bottom:16px}
+  .card-title{font-size:1.08rem}
+  .card-sub{margin-bottom:16px}
+
+  /* Ряды кнопок — в столбик, чтобы длинные подписи не рвали сетку.
+     Перебиваем инлайновый flex:2 у второй кнопки шага. */
+  .btn-row{flex-direction:column}
+  .btn-row .btn{flex:1 1 auto;width:100%}
+
+  /* Причинно-следственная цепочка — вертикально, стрелки поворачиваем */
+  .chain{flex-direction:column;align-items:stretch}
+  .chain-node{width:100%;min-width:0;flex:1 1 auto}
+  .chain-arrow{margin:0;padding:2px 0;transform:rotate(90deg);align-self:center}
+
+  /* Модалка */
+  .modal-overlay{padding:12px}
+  .modal{padding:24px 18px;border-radius:16px}
+  .modal-header{margin-bottom:18px}
+  .modal-title{font-size:1rem}
+
+  /* iOS не зумит при фокусе, если шрифт полей ≥16px */
+  .field select,.field input,.field textarea,
+  .add-hyp-row input{font-size:16px}
+}
+
+/* Узкие экраны ≤400px */
+@media (max-width:400px){
+  .app{padding:14px 10px 76px}
+  .card{padding:18px 14px}
+
+  /* Компактный степпер: подпись только у активного шага */
+  .step .step-label{display:none}
+  .step.active .step-label{display:block}
+  .step-line{margin:0 6px}
+
+  /* Экономический слой — в один столбец */
+  .econ-row{grid-template-columns:1fr}
+}
+
+/* Тач-устройства: цели нажатия ≥44px (WCAG 2.5.5) */
+@media (hover:none) and (pointer:coarse){
+  .nav-btn{min-height:44px;display:inline-flex;align-items:center}
+  .af-chip,.hyp-chip,.layer-tab{min-height:44px;display:inline-flex;align-items:center}
+  .modal-close{width:44px;height:44px;font-size:1.2rem}
+  .btn-sm{min-height:40px}
+  .rm-card-btn{min-height:36px;display:inline-flex;align-items:center}
+  .hyp-tag button{min-width:26px;min-height:26px;display:inline-flex;align-items:center;justify-content:center}
+
+  /* Тач-фолбэк перемещения карточек роадмапа: нативный HTML5 drag&drop
+     на тач не срабатывает, поэтому показываем селект «Переместить». */
+  .rm-card-move{display:flex}
+  .rm-move-sel{min-height:44px;font-size:16px}
+}

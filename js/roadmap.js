@@ -46,6 +46,16 @@ function renderRoadmap() {
           <span class="rm-card-badge" style="background:#F7F8FF;color:var(--muted)">v${item.stratCtx?item.stratCtx.version:'?'}</span>
         </div>
         <button class="rm-card-btn" onclick="event.stopPropagation();openModal('${item.id}')">Полный анализ →</button>
+        <div class="rm-card-move">
+          <span class="rm-move-lbl">Переместить</span>
+          <select class="rm-move-sel" aria-label="Переместить инициативу в другую колонку"
+                  onclick="event.stopPropagation()" onchange="moveCardToZone('${item.id}',this.value)">
+            <option value="now"${item.zone==='now'?' selected':''}>Now</option>
+            <option value="next"${item.zone==='next'?' selected':''}>Next</option>
+            <option value="later"${item.zone==='later'?' selected':''}>Later</option>
+            <option value="reject"${item.zone==='reject'?' selected':''}>Reject</option>
+          </select>
+        </div>
       </div>
     `).join('');
   });
@@ -80,13 +90,22 @@ function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
 function onDrop(e,zone) {
   e.preventDefault(); e.currentTarget.classList.remove('drag-over');
   if (!dragId) return;
-  let item=null;
-  ['now','next','later','reject'].forEach(z => { const idx=roadmap[z].findIndex(i=>i.id===dragId); if(idx!==-1){item=roadmap[z].splice(idx,1)[0];} });
-  if (item) {
-    item.zone = zone;
-    roadmap[zone].push(item);
-    const hi = history.find(h=>h.id===item.id);
-    if (hi) hi.zone = zone;
-    renderRoadmap(); renderHistory(); checkAlerts(); updatePAS();
-  }
+  moveCardToZone(dragId, zone);
+}
+
+// Перенос карточки в колонку. Используется и нативным drag&drop (десктоп),
+// и селектом «Переместить» на карточке (тач-фолбэк — колонки на мобайл
+// стоят вертикально, drag пальцем конфликтовал бы со скроллом страницы).
+function moveCardToZone(id, zone) {
+  if (!zone) return;
+  const from = ['now','next','later','reject'].find(z => roadmap[z].some(i=>i.id===id));
+  if (!from) return;
+  if (from === zone) return;               // уже в этой колонке — ничего не делаем
+  const idx = roadmap[from].findIndex(i=>i.id===id);
+  const item = roadmap[from].splice(idx,1)[0];
+  item.zone = zone;
+  roadmap[zone].push(item);
+  const hi = history.find(h=>h.id===item.id);
+  if (hi) hi.zone = zone;
+  renderRoadmap(); renderHistory(); checkAlerts(); updatePAS();
 }
