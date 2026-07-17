@@ -189,7 +189,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 /* ROADMAP */
 .roadmap-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 @media(max-width:680px){.roadmap-board{grid-template-columns:1fr 1fr}}
-@media(max-width:400px){.roadmap-board{grid-template-columns:1fr}}
+@media(max-width:360px){.roadmap-board{grid-template-columns:1fr}}
 .rm-col{border-radius:var(--radius);padding:14px 12px;min-height:120px}
 .rm-col.now{background:#F0FDF4;border:1.5px solid #BBF7D0}
 .rm-col.next{background:#EFF6FF;border:1.5px solid #BFDBFE}
@@ -289,3 +289,39 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mt20{margin-top:20px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .fade-in{animation:fadeIn .35s ease forwards}
+
+/* ══════════════════════════════════════════════ */
+/* MOBILE (≤600px)                                */
+/* ══════════════════════════════════════════════ */
+@media(max-width:600px){
+  .app{padding:20px 14px 90px}
+  .card{padding:20px 18px}
+
+  /* #1 HEADER: логотип+текст в первой строке, PAS-виджет во всю ширину ниже */
+  .header{flex-wrap:wrap;align-items:flex-start;gap:12px;margin-bottom:22px}
+  .header-text h1{font-size:1rem;line-height:1.25}
+  .header-text p{font-size:.75rem}
+  .pas-widget{margin-left:0;flex-basis:100%;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--border)}
+  .pas-row{gap:10px}
+  .pas-bar-wrap{width:80px}
+
+  /* #2 CTX-STRIP: ровная сетка вместо рваного flex-wrap */
+  .ctx-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 14px}
+
+  /* #3 CAUSAL CHAIN: вертикальный стек, стрелки указывают вниз */
+  .chain{flex-direction:column}
+  .chain-node{width:100%;flex:none}
+  .chain-arrow{margin:2px 0;transform:rotate(90deg);align-self:center}
+
+  /* #5 BTN-ROW: кнопки в столбец во всю ширину */
+  .btn-row{flex-direction:column}
+  .btn-row .btn{flex:none;width:100%}
+
+  /* #6 STEPPER: компактнее, чтобы лейблы влезали на узких экранах */
+  .step{gap:6px}
+  .step-label{font-size:.75rem}
+  .step-line{margin:0 6px;min-width:8px}
+
+  /* #7 PAS-BREAKDOWN: резервируем 2 строки под метку — значения в ряду выровнены */
+  #pasBreakdown .econ-lbl{min-height:2.2em}
+}
