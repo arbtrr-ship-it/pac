@@ -4,14 +4,12 @@
 function openModal(id) {
   const item = history.find(h => h.id === id);
   if (!item) return;
-  const vc = {now:'verdict-now',next:'verdict-next',later:'verdict-later',reject:'verdict-reject'};
-  const vl = {now:'Now',next:'Next',later:'Later',reject:'Reject'};
   const scoreNames = [
     {key:'fit',label:'Strategic Fit'},{key:'impact',label:'Impact'},
     {key:'complexity',label:'Complexity'},{key:'confidence',label:'Confidence'},
   ];
 
-  document.getElementById('modalTitle').textContent = item.text.substring(0,90)+(item.text.length>90?'…':'');
+  document.getElementById('modalTitle').textContent = item.text.substring(0,TRUNC_MODAL)+(item.text.length>TRUNC_MODAL?'…':'');
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-section">
       <div class="modal-section-title">Полный текст</div>
@@ -21,7 +19,7 @@ function openModal(id) {
     <div class="modal-section">
       <div class="modal-section-title">Вердикт и оценки</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-        <span class="verdict-badge ${vc[item.zone]}">${vl[item.zone]}</span>
+        <span class="verdict-badge ${ZONE_CLASS[item.zone]}">${ZONE_LABEL[item.zone]}</span>
         ${item.isAI?'<span style="font-size:.75rem;background:#EDE9FE;color:#5B21B6;padding:3px 10px;border-radius:6px;font-weight:600">AI-инициатива</span>':''}
         <span style="font-size:.8rem;color:var(--muted)">${fmtDate(item.ts)}</span>
       </div>
